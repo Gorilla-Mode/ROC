@@ -75,28 +75,71 @@ f64_t CalcOrbitalPeriod(const Orbit *orbit)
     return 2.0 * M_PI * sqrt(pow(orbit->SMajorAxisM, 3) / orbit->PrimaryBody->GravParam);
 }
 
-f64_t DeltaV(const Orbit *orbitBase, const Orbit *orbitTarget)
+f64_t calcPeriapsis(const Orbit *orbit)
 {
+    return orbit->SMajorAxisM * (1.0 - orbit->Eccentricity);
+}
+
+f64_t calcApoapsis(const Orbit *orbit)
+{
+    return orbit->SMajorAxisM * (1.0 + orbit->Eccentricity);
+}
+
+/**
+ * @brief Calculates the delta-v needed to burn from a circular or elliptical orbit to an elliptical orbit around the same body.
+ * Assumes they share periapsis
+ * @param orbitBase Base orbit, it must same body as the target
+ * @param orbitTarget Target orbit, it must be elliptical and around the same body as the base
+ * @return Delta-v Needed to burn from base orbit to target. (m/s)
+ */
+f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
+{
+    if (!(0.0 < orbitTarget->Eccentricity && orbitTarget->Eccentricity < 1.0))
+    {
+        fprintf(stderr, "Target orbit must be elliptical\n");
+        return -1.0; //TODO: better way to handle these errors, this is shit. Maybe a struct with bool or something
+    }
+
+    if (!(0.0 <= orbitBase->Eccentricity && orbitBase->Eccentricity < 1.0))
+    {
+        fprintf(stderr, "Base orbit must be elliptical or circular\n");
+        return -1.0;
+    }
+
+    if (orbitBase->PrimaryBody == nullptr)
+    {
+        fprintf(stderr, "Base orbit must have a primary body\n");
+        return -1.0;
+    }
+
+    if (orbitBase->Periapsis(orbitBase) != orbitTarget->Periapsis(orbitTarget))
+    {
+        fprintf(stderr, "Base and target orbits must have the same periapsis\n");
+        return -1.0;
+    }
+
     f64_t Mu = orbitBase->PrimaryBody->GravParam;
-    f64_t r1 = orbitBase->SMajorAxisM;
-    f64_t r2 = orbitTarget->SMajorAxisM * (1.0 + orbitTarget->Eccentricity);
+    f64_t r_peri = orbitBase->SMajorAxisM * (1.0 - orbitBase->Eccentricity);
 
-    f64_t dv1 =  sqrt(Mu / r1) * (sqrt(2.0 * r2 / (r1 + r2)) - 1.0);
-    f64_t dv2 = sqrt(Mu / r2) * (1.0 - sqrt(2.0 * r1 / (r1 + r2)));
+    f64_t vBase = sqrt(Mu * (2.0 / r_peri - 1.0 / orbitBase->SMajorAxisM));
+    f64_t vTarget = sqrt(Mu * (2.0 / r_peri - 1.0 / orbitTarget->SMajorAxisM));
 
-    return dv1 + dv2;
+    return vTarget - vBase;;
 }
 
 Orbit CreateOrbit(const CelestBody *primary, f64_t periapsis, f64_t apoapsis)
 {
+    periapsis += (f64_t)primary->EqRadiusM;
+    apoapsis += (f64_t)primary->EqRadiusM;
+
     Orbit orbit = {
         .PrimaryBody = primary,
         .SMajorAxisM = (periapsis + apoapsis) / 2.0,
         .Eccentricity = (apoapsis - periapsis) / (apoapsis + periapsis),
         .OPeriod = CalcOrbitalPeriod,
         .OAltitude = nullptr,
-        .Periapsis = nullptr,
-        .Apoapsis = nullptr,
+        .Periapsis = calcPeriapsis,
+        .Apoapsis = calcApoapsis,
         .ResonantOrbit = nullptr
     };
 
@@ -120,14 +163,14 @@ CelestBody Planets[] = {
 
 int main(void)
 {
-    f64_t mohoRadius = (f64_t)Planets[MOHO].EqRadiusM;
-    f64_t r1 = 100000 + mohoRadius;
-    f64_t r2 = 200000 + mohoRadius;
+    f64_t r1 = 100000;
+    f64_t a1 = 150000;
+    f64_t r2 = 200000;
 
-    Orbit orbit1 = CreateOrbit(&Planets[MOHO], r1, r1);
+    Orbit orbit1 = CreateOrbit(&Planets[MOHO], r1, a1);
     Orbit orbit2 = CreateOrbit(&Planets[MOHO], r1, r2);
 
-    printf("delta v: %lf\n", DeltaV(&orbit1, &orbit2));
+    printf("delta v: %lf\n", DeltaVCircToEllip(&orbit1, &orbit2));
 
     printf("Moho grav surf: %lf\n", Planets[MOHO].GravSurf);
     printf("Eve grav param: %lf\n", Planets[EVE].GravParam);
