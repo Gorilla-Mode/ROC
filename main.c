@@ -30,7 +30,7 @@ typedef struct Orbit Orbit;
  */
 typedef enum
 {
-    MOHO, 
+    MOHO,
     EVE,
     GILLY,
     KERBIN,
@@ -58,7 +58,7 @@ struct CelestBody
 
 struct Orbit
 {
-    CelestBody *PrimaryBody;
+    const CelestBody *PrimaryBody;
 
     f64_t SMajorAxisM;
     f64_t Eccentricity;
@@ -77,7 +77,30 @@ f64_t CalcOrbitalPeriod(const Orbit *orbit)
 
 f64_t DeltaV(const Orbit *orbitBase, const Orbit *orbitTarget)
 {
-    return -1;
+    f64_t Mu = orbitBase->PrimaryBody->GravParam;
+    f64_t r1 = orbitBase->SMajorAxisM;
+    f64_t r2 = orbitTarget->SMajorAxisM * (1.0 + orbitTarget->Eccentricity);
+
+    f64_t dv1 =  sqrt(Mu / r1) * (sqrt(2.0 * r2 / (r1 + r2)) - 1.0);
+    f64_t dv2 = sqrt(Mu / r2) * (1.0 - sqrt(2.0 * r1 / (r1 + r2)));
+
+    return dv1 + dv2;
+}
+
+Orbit CreateOrbit(const CelestBody *primary, f64_t periapsis, f64_t apoapsis)
+{
+    Orbit orbit = {
+        .PrimaryBody = primary,
+        .SMajorAxisM = (periapsis + apoapsis) / 2.0,
+        .Eccentricity = (apoapsis - periapsis) / (apoapsis + periapsis),
+        .OPeriod = CalcOrbitalPeriod,
+        .OAltitude = nullptr,
+        .Periapsis = nullptr,
+        .Apoapsis = nullptr,
+        .ResonantOrbit = nullptr
+    };
+
+    return orbit;
 }
 
 CelestBody Planets[] = {
@@ -95,10 +118,17 @@ CelestBody Planets[] = {
     }
 };
 
-
-
 int main(void)
 {
+    f64_t mohoRadius = (f64_t)Planets[MOHO].EqRadiusM;
+    f64_t r1 = 100000 + mohoRadius;
+    f64_t r2 = 200000 + mohoRadius;
+
+    Orbit orbit1 = CreateOrbit(&Planets[MOHO], r1, r1);
+    Orbit orbit2 = CreateOrbit(&Planets[MOHO], r1, r2);
+
+    printf("delta v: %lf\n", DeltaV(&orbit1, &orbit2));
+
     printf("Moho grav surf: %lf\n", Planets[MOHO].GravSurf);
     printf("Eve grav param: %lf\n", Planets[EVE].GravParam);
 
