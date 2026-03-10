@@ -1,5 +1,7 @@
 ﻿#include <math.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 typedef float f32_t;
 typedef double f64_t; //The fuck even is double, GIVE THE BITS
 typedef __float128 f128_t;
@@ -22,6 +24,29 @@ typedef struct CelestBody CelestBody;
  * @param Eccentricity Defines shape of orbit (0 <= e < 1)
  */
 typedef struct Orbit Orbit;
+
+/**
+ * @brief Keys of planets in the kerbol system, ordered.
+ */
+typedef enum
+{
+    MOHO, 
+    EVE,
+    GILLY,
+    KERBIN,
+    MUN,
+    MINMUS,
+    DUNA,
+    IKE,
+    DRES,
+    JOOL,
+    LAYTHE,
+    VALL,
+    TYLO,
+    BOP,
+    POL,
+    EELOO
+}CelestBodyKey;
 
 struct CelestBody
 {
@@ -53,4 +78,29 @@ f64_t CalcOrbitalPeriod(const Orbit *orbit)
 f64_t DeltaV(const Orbit *orbitBase, const Orbit *orbitTarget)
 {
     return -1;
+}
+
+CelestBody Planets[] = {
+    {
+        .GravSurf = 2.70,
+        .GravParam = 1.6860938e11,
+        .EqRadiusM = 250000,
+        .AtmHeightM = -1
+    },
+    {
+        .GravSurf = 16.70,
+        .GravParam = 8.1717302e12,
+        .EqRadiusM = 700000,
+        .AtmHeightM = 90000
+    }
+};
+
+
+
+int main(void)
+{
+    printf("Moho grav surf: %lf\n", Planets[MOHO].GravSurf);
+    printf("Eve grav param: %lf\n", Planets[EVE].GravParam);
+
+    return 0;
 }
