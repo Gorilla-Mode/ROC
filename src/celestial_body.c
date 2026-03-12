@@ -25,6 +25,7 @@ struct CelestBody
     f64_t GravParam;
     uint64_t EqRadiusM;
     int32_t AtmHeightM;
+    f64_t SOI;
 };
 
 enum CelestBodyKey
