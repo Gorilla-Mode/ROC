@@ -12,14 +12,13 @@ int main(void)
 {
     OrbitError O_Err;
     f64_t r1 = 100000;
-    f64_t a1 = 100000;
+    f64_t a1 = 9646663.0 - (f64_t)Kerbol[MOHO].EqRadiusM;
     f64_t r2 = 200000;
 
-    Orbit orbit1 = CreateOrbitCircularAlt(&Planets[MOHO], a1);
-    Orbit orbit2 = CreateOrbitEllipse(&Planets[MOHO], r1, r2);
-    Orbit resonantOrbit = CalcResonantOrbitRetr(&orbit1, 4, &O_Err);
-
-
+    Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1);
+    Orbit orbit2 = CreateOrbitEllipse(&Kerbol[MOHO], r1, r2);
+    Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &O_Err);
+    
     if (O_Err == ORBIT_SUCCESS)
     {
         printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit));
@@ -31,8 +30,8 @@ int main(void)
         printf("Orbital periapsis orbit res: %lf\n", resonantOrbit.PeriapsisHeight(&resonantOrbit));
         printf("Orbital apoapsis orbit res: %lf\n", resonantOrbit.ApoapsisHeight(&resonantOrbit));
 
-        printf("Moho grav surf: %lf\n", Planets[MOHO].GravSurf);
-        printf("Eve grav param: %lf\n", Planets[EVE].GravParam);
+        printf("Moho grav surf: %lf\n", Kerbol[MOHO].GravSurf);
+        printf("Eve grav param: %lf\n", Kerbol[EVE].GravParam);
     }
     return 0;
 }

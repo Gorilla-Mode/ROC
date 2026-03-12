@@ -51,8 +51,22 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
     return fabs(vTarget - vBase);
 }
 
-Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
+Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
 {
+    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    if (satteliteCount < 3)
+    {
+        fprintf(stderr, "\nSatellite count must be at least 3\n");
+        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        return (Orbit){0};
+    }
+
     f64_t period = orbit->OPeriod(orbit);
     f64_t mu =  orbit->PrimaryBody->GravParam;
     f64_t periap =orbit->Periapsis(orbit);
@@ -74,11 +88,32 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
         .ApoapsisHeight = orbit->ApoapsisHeight,
     };
 
+    if (resonantOrbit.Apoapsis(&resonantOrbit) > resonantOrbit.PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nResonant orbit apoapsis outside sphere of influence, use a retorgrade burn.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    *err = ORBIT_SUCCESS;
     return resonantOrbit;
 }
 
 Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
 {
+    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    if (satteliteCount < 3)
+    {
+        fprintf(stderr, "\nSatellite count must be at least 3\n");
+        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        return (Orbit){0};
+    }
 
     f64_t period = orbit->OPeriod(orbit);
     f64_t mu =  orbit->PrimaryBody->GravParam;
@@ -103,7 +138,6 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
     if (resonantOrbit.Periapsis(&resonantOrbit) <= resonantOrbit.PrimaryBody->EqRadiusM)
     {
         fprintf(stderr, "\nResonant orbit intersects with surface, use a prograde orbit.\n");
-
         *err = ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE;
         return (Orbit){0};
     }
