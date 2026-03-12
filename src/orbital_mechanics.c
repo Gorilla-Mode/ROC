@@ -47,7 +47,7 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
     f64_t vBase = sqrt(mu * (2.0 / r_peri - 1.0 / orbitBase->SMajorAxisM));
     f64_t vTarget = sqrt(mu * (2.0 / r_peri - 1.0 / orbitTarget->SMajorAxisM));
 
-    return vTarget - vBase;;
+    return fabs(vTarget - vBase);
 }
 
 Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
