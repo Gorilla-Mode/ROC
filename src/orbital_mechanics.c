@@ -33,7 +33,9 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
         return -1.0;
     }
 
-    if (orbitBase->Periapsis(orbitBase) != orbitTarget->Periapsis(orbitTarget))
+    f64_t epsilon = 1e-6; //Fix for floating point errors
+    if (fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Periapsis(orbitTarget)) > epsilon &&
+         fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Apoapsis(orbitTarget)) > epsilon)
     {
         fprintf(stderr, "Base and target orbits must have the same periapsis\n");
         return -1.0;
@@ -58,6 +60,31 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
     f64_t res_period = period * ((f64_t)satteliteCount / (satteliteCount - 1.0)) ;
     f64_t res_sma = cbrt((pow(res_period, 2) * mu) / (4.0 * pow(M_PI, 2)));
     f64_t res_ecc = 1.0 - (periap / res_sma);
+
+    Orbit resonantOrbit = {
+        .PrimaryBody = orbit->PrimaryBody,
+        .SMajorAxisM = res_sma,
+        .Eccentricity = res_ecc,
+        .OPeriod = orbit->OPeriod,
+        .OAltitude = orbit->OAltitude,
+        .Periapsis = orbit->Periapsis,
+        .Apoapsis = orbit->Apoapsis,
+        .PeriapsisHeight = orbit->PeriapsisHeight,
+        .ApoapsisHeight = orbit->ApoapsisHeight,
+    };
+
+    return resonantOrbit;
+}
+
+Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount)
+{
+    f64_t period = orbit->OPeriod(orbit);
+    f64_t mu =  orbit->PrimaryBody->GravParam;
+    f64_t apoap =orbit->Apoapsis(orbit);
+
+    f64_t res_period = period * ((satteliteCount - 1.0) / satteliteCount) ;
+    f64_t res_sma = cbrt((pow(res_period, 2) * mu) / (4.0 * pow(M_PI, 2)));
+    f64_t res_ecc =  apoap / res_sma - 1.0;
 
     Orbit resonantOrbit = {
         .PrimaryBody = orbit->PrimaryBody,
