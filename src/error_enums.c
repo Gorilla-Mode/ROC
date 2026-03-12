@@ -1,0 +1,4 @@
+﻿typedef enum {
+    ORBIT_SUCCESS = 0,
+    ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE = 1,
+} OrbitError;

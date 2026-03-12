@@ -1,5 +1,6 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
+#include "error_enums.c"
 #include "orbit.c"
 #endif
 
@@ -76,8 +77,9 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
     return resonantOrbit;
 }
 
-Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount)
+Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
 {
+
     f64_t period = orbit->OPeriod(orbit);
     f64_t mu =  orbit->PrimaryBody->GravParam;
     f64_t apoap =orbit->Apoapsis(orbit);
@@ -98,5 +100,14 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount)
         .ApoapsisHeight = orbit->ApoapsisHeight,
     };
 
+    if (resonantOrbit.Periapsis(&resonantOrbit) <= resonantOrbit.PrimaryBody->EqRadiusM)
+    {
+        fprintf(stderr, "\nResonant orbit intersects with surface, use a prograde orbit.\n");
+
+        *err = ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE;
+        return (Orbit){0};
+    }
+
+    *err = ORBIT_SUCCESS;
     return resonantOrbit;
 }
