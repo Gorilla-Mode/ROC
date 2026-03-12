@@ -2,7 +2,6 @@
 #include "global_typedefs.c"
 #include "celestial_body.c"
 #endif
-#include <stdint.h>
 #include <math.h>
 
 /**
@@ -25,7 +24,8 @@ struct Orbit
     f64_t (*OAltitude)     (const Orbit *orbit);
     f64_t (*Periapsis)     (const Orbit *orbit);
     f64_t (*Apoapsis)      (const Orbit *orbit);
-    Orbit (*ResonantOrbit) (const Orbit *orbit, uint32_t satelliteCount, f64_t desiredAltitude);
+    f64_t (*PeriapsisHeight)(const Orbit *orbit);
+    f64_t (*ApoapsisHeight)(const Orbit *orbit);
 };
 
 
@@ -44,12 +44,22 @@ f64_t calcApoapsis(const Orbit *orbit)
     return orbit->SMajorAxisM * (1.0 + orbit->Eccentricity);
 }
 
+f64_t calcPeriapsisHeight(const Orbit *orbit)
+{
+    return calcPeriapsis(orbit) - orbit->PrimaryBody->EqRadiusM;
+}
+
+f64_t calcApoapsisHeight(const Orbit *orbit)
+{
+    return calcApoapsis(orbit) - orbit->PrimaryBody->EqRadiusM;
+}
+
 f64_t calcOrbitalAltitude(const Orbit *orbit)
 {
     return orbit->SMajorAxisM - (f64_t)orbit->PrimaryBody->EqRadiusM;
 }
 
-Orbit CreateOrbit_ellipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis)
+Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis)
 {
     periapsis += (f64_t)primary->EqRadiusM;
     apoapsis += (f64_t)primary->EqRadiusM;
@@ -62,13 +72,14 @@ Orbit CreateOrbit_ellipse(const CelestBody *primary, f64_t periapsis, f64_t apoa
         .OAltitude = calcOrbitalAltitude,
         .Periapsis = calcPeriapsis,
         .Apoapsis = calcApoapsis,
-        .ResonantOrbit = nullptr
+        .PeriapsisHeight = calcPeriapsisHeight,
+        .ApoapsisHeight = calcApoapsisHeight,
     };
 
     return orbit;
 }
 
-Orbit CreateOrbit_circular_smj(const CelestBody *primary, f64_t SMajorAxis)
+Orbit CreateOrbitCircularSmj(const CelestBody *primary, f64_t SMajorAxis)
 {
     Orbit orbit = {
         .PrimaryBody = primary,
@@ -78,13 +89,14 @@ Orbit CreateOrbit_circular_smj(const CelestBody *primary, f64_t SMajorAxis)
         .OAltitude = calcOrbitalAltitude,
         .Periapsis = calcPeriapsis,
         .Apoapsis = calcApoapsis,
-        .ResonantOrbit = nullptr
+        .PeriapsisHeight = calcPeriapsisHeight,
+        .ApoapsisHeight = calcApoapsisHeight,
     };
 
     return orbit;
 }
 
-Orbit CreateOrbit_circular_alt(const CelestBody *primary, f64_t altitude)
+Orbit CreateOrbitCircularAlt(const CelestBody *primary, f64_t altitude)
 {
     Orbit orbit = {
         .PrimaryBody = primary,
@@ -94,7 +106,8 @@ Orbit CreateOrbit_circular_alt(const CelestBody *primary, f64_t altitude)
         .OAltitude = calcOrbitalAltitude,
         .Periapsis = calcPeriapsis,
         .Apoapsis = calcApoapsis,
-        .ResonantOrbit = nullptr
+        .PeriapsisHeight = calcPeriapsisHeight,
+        .ApoapsisHeight = calcApoapsisHeight,
     };
 
     return orbit;
