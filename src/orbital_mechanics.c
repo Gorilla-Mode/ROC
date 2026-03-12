@@ -1,5 +1,6 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
+#include "error_enums.c"
 #include "orbit.c"
 #endif
 
@@ -13,23 +14,26 @@
  * @param orbitTarget Target orbit, it must be elliptical and around the same body as the base
  * @return Delta-v Needed to burn from base orbit to target. (m/s)
  */
-f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
+f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitError* err)
 {
     if (!(0.0 < orbitTarget->Eccentricity && orbitTarget->Eccentricity < 1.0))
     {
         fprintf(stderr, "Target orbit must be elliptical\n");
+        *err = ORBIT_ERR_NOT_ELLIPTICAL;
         return -1.0; //TODO: better way to handle these errors, this is shit. Maybe a struct with bool or something
     }
 
     if (!(0.0 <= orbitBase->Eccentricity && orbitBase->Eccentricity < 1.0))
     {
         fprintf(stderr, "Base orbit must be elliptical or circular\n");
+        *err = ORBIT_ERR_NOT_ELLIPTICAL_OR_CIRCULAR;
         return -1.0;
     }
 
     if (orbitBase->PrimaryBody == nullptr)
     {
         fprintf(stderr, "Base orbit must have a primary body\n");
+        *err = ORBIT_ERR_MISSING_PRIMARY;
         return -1.0;
     }
 
@@ -37,7 +41,8 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
     if (fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Periapsis(orbitTarget)) > epsilon &&
          fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Apoapsis(orbitTarget)) > epsilon)
     {
-        fprintf(stderr, "Base and target orbits must have the same periapsis\n");
+        fprintf(stderr, "Base and target orbits must intersect\n");
+        *err = ORBIT_ERR_NOT_INTERSECTING;
         return -1.0;
     }
 
@@ -50,8 +55,22 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget)
     return fabs(vTarget - vBase);
 }
 
-Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
+Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
 {
+    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    if (satteliteCount < 3)
+    {
+        fprintf(stderr, "\nSatellite count must be at least 3\n");
+        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        return (Orbit){0};
+    }
+
     f64_t period = orbit->OPeriod(orbit);
     f64_t mu =  orbit->PrimaryBody->GravParam;
     f64_t periap =orbit->Periapsis(orbit);
@@ -73,11 +92,33 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount)
         .ApoapsisHeight = orbit->ApoapsisHeight,
     };
 
+    if (resonantOrbit.Apoapsis(&resonantOrbit) > resonantOrbit.PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nResonant orbit apoapsis outside sphere of influence, use a retorgrade burn.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    *err = ORBIT_SUCCESS;
     return resonantOrbit;
 }
 
-Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount)
+Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
 {
+    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
+    {
+        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
+        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        return (Orbit){0};
+    }
+
+    if (satteliteCount < 3)
+    {
+        fprintf(stderr, "\nSatellite count must be at least 3\n");
+        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        return (Orbit){0};
+    }
+
     f64_t period = orbit->OPeriod(orbit);
     f64_t mu =  orbit->PrimaryBody->GravParam;
     f64_t apoap =orbit->Apoapsis(orbit);
@@ -98,5 +139,13 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount)
         .ApoapsisHeight = orbit->ApoapsisHeight,
     };
 
+    if (resonantOrbit.Periapsis(&resonantOrbit) <= resonantOrbit.PrimaryBody->EqRadiusM)
+    {
+        fprintf(stderr, "\nResonant orbit intersects with surface, use a prograde orbit.\n");
+        *err = ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE;
+        return (Orbit){0};
+    }
+
+    *err = ORBIT_SUCCESS;
     return resonantOrbit;
 }
