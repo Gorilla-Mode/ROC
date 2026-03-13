@@ -39,6 +39,7 @@ int main(void)
     printf("Orbital periapsis orbit res: %lf\n", resonantOrbit.PeriapsisHeight(&resonantOrbit));
     printf("Orbital apoapsis orbit res: %lf\n", resonantOrbit.ApoapsisHeight(&resonantOrbit));
     printf("Line of sight check: %d\n", LineofSight(&orbit1, 3, &LOS_Err));
+    printf("Atmospheric occolusion: %d\n", AtmosphericOccusion(&orbit1, 3, &LOS_Err));
 
     printf("Moho grav surf: %lf\n", Kerbol[MOHO].GravSurf);
     printf("Eve grav param: %lf\n", Kerbol[EVE].GravParam);
