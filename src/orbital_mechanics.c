@@ -142,3 +142,32 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
     *err = ORBIT_SUCCESS;
     return resonantOrbit;
 }
+
+bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
+{
+    if (orbit->PrimaryBody == nullptr)
+    {
+        *err = LOS_ERR_MISSING_PRIMARY;
+        return false;
+    }
+
+    if (orbit->Eccentricity != 0.0)
+    {
+        *err = LOS_ERR_ORBIT_NOT_CIRCULAR;
+        return false;
+    }
+
+    if (satelliteCount < 3)
+    {
+        *err = LOS_ERR_INVALID_SATELLITE_COUNT;
+        return false;
+    }
+
+    const f64_t SmajA = orbit->SMajorAxisM;
+    const f64_t EqRad = orbit->PrimaryBody->EqRadiusM;
+
+    const f64_t Theta = 2.0 * M_PI / (f64_t)satelliteCount;
+    const f64_t MinDist = SmajA * cos(Theta / 2.0);
+
+    return MinDist > EqRad;
+}

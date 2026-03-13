@@ -11,8 +11,9 @@
 int main(void)
 {
     OrbitError O_Err = 0;
+    LosError LOS_Err = 0;
     f64_t r1 = 100000;
-    f64_t a1 = 9646663.0 - (f64_t)Kerbol[MOHO].EqRadiusM;
+    f64_t a1 = 250000;
     f64_t r2 = 200000;
 
     Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1);
@@ -37,6 +38,7 @@ int main(void)
     printf("Orbital period orbit res: %lf\n", resonantOrbit.OPeriod(&resonantOrbit));
     printf("Orbital periapsis orbit res: %lf\n", resonantOrbit.PeriapsisHeight(&resonantOrbit));
     printf("Orbital apoapsis orbit res: %lf\n", resonantOrbit.ApoapsisHeight(&resonantOrbit));
+    printf("Line of sight check: %d\n", LineofSight(&orbit1, 3, &LOS_Err));
 
     printf("Moho grav surf: %lf\n", Kerbol[MOHO].GravSurf);
     printf("Eve grav param: %lf\n", Kerbol[EVE].GravParam);
