@@ -82,5 +82,53 @@ CelestBody Kerbol[] = {
         .EqRadiusM = 6000000,
         .AtmHeightM = 200000,
         .SOI = 2.4559852e9
+    },
+    {
+        //Laythe
+        .GravSurf = 7.85,
+        .GravParam = 1.9620000e12,
+        .EqRadiusM = 500000,
+        .AtmHeightM = 50000,
+        .SOI = 3723645.8
+    },
+    {
+        //Vall
+        .GravSurf = 2.31,
+        .GravParam = 2.0748150e11,
+        .EqRadiusM = 300000,
+        .AtmHeightM = -1,
+        .SOI = 2406401.4
+    },
+    {
+        //Tylo
+        .GravSurf = 7.85,
+        .GravParam = 2.8252800e12,
+        .EqRadiusM = 6000000,
+        .AtmHeightM = -1,
+        .SOI = 10856518
+    },
+    {
+        //Bop
+        .GravSurf = 0.589,
+        .GravParam = 2.4868349e9,
+        .EqRadiusM = 65000,
+        .AtmHeightM = -1,
+        .SOI = 1221060.9
+    },
+    {
+        //Pol
+        .GravSurf = 0.373,
+        .GravParam = 7.2170208e8,
+        .EqRadiusM = 44000,
+        .AtmHeightM = -1,
+        .SOI = 1042138.9
+    },
+    {
+        //Eeloo
+        .GravSurf = 1.69,
+        .GravParam = 5.5417694e11,
+        .EqRadiusM = 2100000,
+        .AtmHeightM = -1,
+        .SOI = 1.1908294e8
     }
 };
