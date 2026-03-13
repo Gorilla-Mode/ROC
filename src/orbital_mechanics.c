@@ -4,35 +4,34 @@
 #include "orbit.c"
 #endif
 
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 /**
 * @brief Calculates the delta-v needed to burn from a circular or elliptical orbit to an elliptical orbit around the same body.
  * Assumes they share periapsis
  * @param orbitBase Base orbit, it must same body as the target
  * @param orbitTarget Target orbit, it must be elliptical and around the same body as the base
+ * @param err Pointer to an OrbitError variable to store any error that occurs during the calculation
  * @return Delta-v Needed to burn from base orbit to target. (m/s)
  */
 f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitError* err)
 {
     if (!(0.0 < orbitTarget->Eccentricity && orbitTarget->Eccentricity < 1.0))
     {
-        fprintf(stderr, "Target orbit must be elliptical\n");
+        (void)fprintf_s(stderr, "Target orbit must be elliptical\n");
         *err = ORBIT_ERR_NOT_ELLIPTICAL;
-        return -1.0; //TODO: better way to handle these errors, this is shit. Maybe a struct with bool or something
+        return -1.0;
     }
 
     if (!(0.0 <= orbitBase->Eccentricity && orbitBase->Eccentricity < 1.0))
     {
-        fprintf(stderr, "Base orbit must be elliptical or circular\n");
         *err = ORBIT_ERR_NOT_ELLIPTICAL_OR_CIRCULAR;
         return -1.0;
     }
 
     if (orbitBase->PrimaryBody == nullptr)
     {
-        fprintf(stderr, "Base orbit must have a primary body\n");
         *err = ORBIT_ERR_MISSING_PRIMARY;
         return -1.0;
     }
@@ -41,7 +40,6 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitE
     if (fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Periapsis(orbitTarget)) > epsilon &&
          fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Apoapsis(orbitTarget)) > epsilon)
     {
-        fprintf(stderr, "Base and target orbits must intersect\n");
         *err = ORBIT_ERR_NOT_INTERSECTING;
         return -1.0;
     }
@@ -59,21 +57,20 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
     {
-        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
+        (void)fprintf_s(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
         *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
 
     if (satteliteCount < 3)
     {
-        fprintf(stderr, "\nSatellite count must be at least 3\n");
         *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
         return (Orbit){0};
     }
 
-    f64_t period = orbit->OPeriod(orbit);
-    f64_t mu =  orbit->PrimaryBody->GravParam;
-    f64_t periap =orbit->Periapsis(orbit);
+    const f64_t period = orbit->OPeriod(orbit);
+    const f64_t mu =  orbit->PrimaryBody->GravParam;
+    const f64_t periap =orbit->Periapsis(orbit);
     satteliteCount++;
 
     f64_t res_period = period * ((f64_t)satteliteCount / (satteliteCount - 1.0)) ;
@@ -94,7 +91,6 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
 
     if (resonantOrbit.Apoapsis(&resonantOrbit) > resonantOrbit.PrimaryBody->SOI)
     {
-        fprintf(stderr, "\nResonant orbit apoapsis outside sphere of influence, use a retorgrade burn.\n");
         *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
@@ -107,25 +103,23 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
     {
-        fprintf(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
         *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
 
     if (satteliteCount < 3)
     {
-        fprintf(stderr, "\nSatellite count must be at least 3\n");
         *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
         return (Orbit){0};
     }
 
-    f64_t period = orbit->OPeriod(orbit);
-    f64_t mu =  orbit->PrimaryBody->GravParam;
-    f64_t apoap =orbit->Apoapsis(orbit);
+    const f64_t period = orbit->OPeriod(orbit);
+    const f64_t mu =  orbit->PrimaryBody->GravParam;
+    const f64_t apoap =orbit->Apoapsis(orbit);
 
     f64_t res_period = period * ((satteliteCount - 1.0) / satteliteCount) ;
     f64_t res_sma = cbrt((pow(res_period, 2) * mu) / (4.0 * pow(M_PI, 2)));
-    f64_t res_ecc =  apoap / res_sma - 1.0;
+    f64_t res_ecc =  (apoap / res_sma) - 1.0;
 
     Orbit resonantOrbit = {
         .PrimaryBody = orbit->PrimaryBody,
@@ -139,9 +133,8 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
         .ApoapsisHeight = orbit->ApoapsisHeight,
     };
 
-    if (resonantOrbit.Periapsis(&resonantOrbit) <= resonantOrbit.PrimaryBody->EqRadiusM)
+    if (resonantOrbit.Periapsis(&resonantOrbit) <= (f64_t)resonantOrbit.PrimaryBody->EqRadiusM)
     {
-        fprintf(stderr, "\nResonant orbit intersects with surface, use a prograde orbit.\n");
         *err = ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE;
         return (Orbit){0};
     }

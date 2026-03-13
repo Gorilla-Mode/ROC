@@ -1,16 +1,16 @@
 ﻿#define UNITY_BUILD
 
-#include <stdio.h>
 #include "global_typedefs.c"
-#include "error_enums.c"
 #include "celestial_body.c"
-#include "planets.c"
+#include "error_enums.c"
 #include "orbit.c"
 #include "orbital_mechanics.c"
+#include "planets.c"
+#include <stdio.h>
 
 int main(void)
 {
-    OrbitError O_Err;
+    OrbitError O_Err = 0;
     f64_t r1 = 100000;
     f64_t a1 = 9646663.0 - (f64_t)Kerbol[MOHO].EqRadiusM;
     f64_t r2 = 200000;
@@ -20,12 +20,14 @@ int main(void)
     Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &O_Err);
     if (O_Err != ORBIT_SUCCESS)
     {
+        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
         return 0;
     }
 
     printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &O_Err));
     if (O_Err != ORBIT_SUCCESS)
     {
+        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
         return 0;
     }
 
