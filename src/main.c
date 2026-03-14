@@ -10,25 +10,38 @@
 
 int main(void)
 {
-    OrbitError O_Err = 0;
+    ResonantError Res_Err = 0;
     LosError LOS_Err = 0;
+    OrbitError Orbit_Err = 0;
     f64_t r1 = 100000;
-    f64_t a1 = 250000;
+    f64_t a1 = 2000000;
     f64_t r2 = 200000;
 
-    Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1);
-    Orbit orbit2 = CreateOrbitEllipse(&Kerbol[MOHO], r1, r2);
-    Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &O_Err);
-    if (O_Err != ORBIT_SUCCESS)
+    Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1, &Orbit_Err);
+    if (Orbit_Err != ORBIT_SUCCESS)
     {
-        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
+        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(Orbit_Err));
         return 0;
     }
 
-    printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &O_Err));
-    if (O_Err != ORBIT_SUCCESS)
+    Orbit orbit2 = CreateOrbitEllipse(&Kerbol[MOHO], r1, r2, &Orbit_Err);
+    if (Orbit_Err != ORBIT_SUCCESS)
     {
-        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
+        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(Orbit_Err));
+        return 0;
+    }
+
+    Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &Res_Err);
+    if (Res_Err != RES_SUCCESS)
+    {
+        (void)fprintf_s(stderr, "Error: %s\n", ResonantErrorToString(Res_Err));
+        return 0;
+    }
+
+    printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &Res_Err));
+    if (Res_Err != RES_SUCCESS)
+    {
+        (void)fprintf_s(stderr, "Error: %s\n", ResonantErrorToString(Res_Err));
         return 0;
     }
 

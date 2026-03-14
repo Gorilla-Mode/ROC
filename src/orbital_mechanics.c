@@ -15,24 +15,23 @@
  * @param err Pointer to an OrbitError variable to store any error that occurs during the calculation
  * @return Delta-v Needed to burn from base orbit to target. (m/s)
  */
-f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitError* err)
+f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, ResonantError* err)
 {
     if (!(0.0 < orbitTarget->Eccentricity && orbitTarget->Eccentricity < 1.0))
     {
-        (void)fprintf_s(stderr, "Target orbit must be elliptical\n");
-        *err = ORBIT_ERR_NOT_ELLIPTICAL;
+        *err = RES_ERR_NOT_ELLIPTICAL;
         return -1.0;
     }
 
     if (!(0.0 <= orbitBase->Eccentricity && orbitBase->Eccentricity < 1.0))
     {
-        *err = ORBIT_ERR_NOT_ELLIPTICAL_OR_CIRCULAR;
+        *err = RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR;
         return -1.0;
     }
 
     if (orbitBase->PrimaryBody == nullptr)
     {
-        *err = ORBIT_ERR_MISSING_PRIMARY;
+        *err = RES_ERR_MISSING_PRIMARY;
         return -1.0;
     }
 
@@ -40,7 +39,7 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitE
     if (fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Periapsis(orbitTarget)) > epsilon &&
          fabs(orbitBase->Periapsis(orbitBase) - orbitTarget->Apoapsis(orbitTarget)) > epsilon)
     {
-        *err = ORBIT_ERR_NOT_INTERSECTING;
+        *err = RES_ERR_NOT_INTERSECTING;
         return -1.0;
     }
 
@@ -53,18 +52,17 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, OrbitE
     return fabs(vTarget - vBase);
 }
 
-Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
+Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, ResonantError* err)
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
     {
-        (void)fprintf_s(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
-        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
 
     if (satteliteCount < 3)
     {
-        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        *err = RES_ERR_INVALID_SATELLITE_COUNT;
         return (Orbit){0};
     }
 
@@ -91,25 +89,25 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
 
     if (resonantOrbit.Apoapsis(&resonantOrbit) > resonantOrbit.PrimaryBody->SOI)
     {
-        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
 
-    *err = ORBIT_SUCCESS;
+    *err = RES_SUCCESS;
     return resonantOrbit;
 }
 
-Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitError* err)
+Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, ResonantError* err)
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
     {
-        *err = ORBIT_ERR_APOAPSIS_OUTSIDE_SOI;
+        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
 
     if (satteliteCount < 3)
     {
-        *err = ORBIT_ERR_INVALID_SATELLITE_COUNT;
+        *err = RES_ERR_INVALID_SATELLITE_COUNT;
         return (Orbit){0};
     }
 
@@ -135,11 +133,11 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, OrbitEr
 
     if (resonantOrbit.Periapsis(&resonantOrbit) <= (f64_t)resonantOrbit.PrimaryBody->EqRadiusM)
     {
-        *err = ORBIT_ERR_PERIAPSIS_INTERSECTS_SURFACE;
+        *err = RES_ERR_PERIAPSIS_INTERSECTS_SURFACE;
         return (Orbit){0};
     }
 
-    *err = ORBIT_SUCCESS;
+    *err = RES_SUCCESS;
     return resonantOrbit;
 }
 

@@ -1,6 +1,7 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
 #include "celestial_body.c"
+#include "error_enums.c"
 #endif
 #include <math.h>
 
@@ -59,7 +60,23 @@ f64_t calcOrbitalAltitude(const Orbit *orbit)
     return orbit->SMajorAxisM - (f64_t)orbit->PrimaryBody->EqRadiusM;
 }
 
-Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis)
+OrbitError GetOrbitalError(const Orbit *orbit)
+{
+    OrbitError err = ORBIT_SUCCESS;
+
+    if (orbit->PrimaryBody == nullptr)
+        err = ORBIT_ERR_MISSING_PRIMARY;
+    if (calcPeriapsis(orbit) <= (f64_t)orbit->PrimaryBody->EqRadiusM)
+        err = ORBIT_ERR_INTERSECTING_SURFACE;
+    if (calcApoapsis(orbit) > orbit->PrimaryBody->SOI)
+        err = ORBIT_ERR_OUTSIDE_SOI;
+    if (calcPeriapsis(orbit) < (f64_t)orbit->PrimaryBody->EqRadiusM + (f64_t)orbit->PrimaryBody->AtmHeightM)
+        err = ORBIT_ERR_BELOW_ATMOSPHERE;
+
+    return err;
+}
+
+Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis, OrbitError *err)
 {
     periapsis += (f64_t)primary->EqRadiusM;
     apoapsis += (f64_t)primary->EqRadiusM;
@@ -76,10 +93,12 @@ Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoap
         .ApoapsisHeight = calcApoapsisHeight,
     };
 
+    *err = GetOrbitalError(&orbit);
+
     return orbit;
 }
 
-Orbit CreateOrbitCircularSmj(const CelestBody *primary, f64_t SMajorAxis)
+Orbit CreateOrbitCircularSmj(const CelestBody *primary, f64_t SMajorAxis, OrbitError *err)
 {
     Orbit orbit = {
         .PrimaryBody = primary,
@@ -93,10 +112,12 @@ Orbit CreateOrbitCircularSmj(const CelestBody *primary, f64_t SMajorAxis)
         .ApoapsisHeight = calcApoapsisHeight,
     };
 
+    *err = GetOrbitalError(&orbit);
+
     return orbit;
 }
 
-Orbit CreateOrbitCircularAlt(const CelestBody *primary, f64_t altitude)
+Orbit CreateOrbitCircularAlt(const CelestBody *primary, f64_t altitude, OrbitError *err)
 {
     Orbit orbit = {
         .PrimaryBody = primary,
@@ -109,6 +130,8 @@ Orbit CreateOrbitCircularAlt(const CelestBody *primary, f64_t altitude)
         .PeriapsisHeight = calcPeriapsisHeight,
         .ApoapsisHeight = calcApoapsisHeight,
     };
+
+    *err = GetOrbitalError(&orbit);
 
     return orbit;
 }
