@@ -10,7 +10,7 @@
 
 int main(void)
 {
-    OrbitError O_Err = 0;
+    ResonantError O_Err = 0;
     LosError LOS_Err = 0;
     f64_t r1 = 100000;
     f64_t a1 = 250000;
@@ -19,14 +19,14 @@ int main(void)
     Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1);
     Orbit orbit2 = CreateOrbitEllipse(&Kerbol[MOHO], r1, r2);
     Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &O_Err);
-    if (O_Err != ORBIT_SUCCESS)
+    if (O_Err != RES_SUCCESS)
     {
         (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
         return 0;
     }
 
     printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &O_Err));
-    if (O_Err != ORBIT_SUCCESS)
+    if (O_Err != RES_SUCCESS)
     {
         (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(O_Err));
         return 0;
