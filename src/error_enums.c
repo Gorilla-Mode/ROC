@@ -17,7 +17,16 @@ typedef enum
     LOS_ERR_ORBIT_NOT_CIRCULAR
 }LosError;
 
-const char* OrbitErrorToString(ResonantError err)
+typedef enum
+{
+    ORBIT_SUCCESS = 0,
+    ORBIT_ERR_MISSING_PRIMARY,
+    ORBIT_ERR_BELOW_ATMOSPHERE,
+    ORBIT_ERR_OUTSIDE_SOI,
+    ORBIT_ERR_INTERSECTING_SURFACE
+}OrbitError;
+
+const char* ResonantErrorToString(ResonantError err)
 {
     static const char* errorStrings[] = {
         [RES_SUCCESS]                          = "Success",
@@ -44,6 +53,22 @@ const char* LosErrorToString(LosError err)
         [LOS_ERR_MISSING_PRIMARY]          = "Missing primary body",
         [LOS_ERR_ORBIT_NOT_CIRCULAR]       = "Orbit is not circular",
 
+    };
+
+    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
+        return "Unknown error";
+    }
+    return errorStrings[err];
+}
+
+const char* OrbitErrorToString(OrbitError err)
+{
+    static const char* errorStrings[] = {
+        [ORBIT_SUCCESS]                  = "Success",
+        [ORBIT_ERR_MISSING_PRIMARY]      = "Missing primary body",
+        [ORBIT_ERR_BELOW_ATMOSPHERE]     = "Orbit is below atmosphere, use a higher periapsis",
+        [ORBIT_ERR_OUTSIDE_SOI]          = "Orbit is outside sphere of influence, use a lower apoapsis",
+        [ORBIT_ERR_INTERSECTING_SURFACE] = "Orbit intersects surface, use a higher periapsis",
     };
 
     if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {

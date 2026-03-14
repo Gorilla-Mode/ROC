@@ -19,7 +19,6 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, Resona
 {
     if (!(0.0 < orbitTarget->Eccentricity && orbitTarget->Eccentricity < 1.0))
     {
-        (void)fprintf_s(stderr, "Target orbit must be elliptical\n");
         *err = RES_ERR_NOT_ELLIPTICAL;
         return -1.0;
     }
@@ -57,7 +56,6 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, Resonan
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
     {
-        (void)fprintf_s(stderr, "\nInvalid orbit, Apoapsis outside sphere of influence.\n");
         *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
         return (Orbit){0};
     }
