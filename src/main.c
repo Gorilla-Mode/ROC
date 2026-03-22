@@ -2,7 +2,7 @@
 
 #include "global_typedefs.c"
 #include "celestial_body.c"
-#include "error_enums.c"
+#include "error.c"
 #include "orbit.c"
 #include "orbital_mechanics.c"
 #include "planets.c"
