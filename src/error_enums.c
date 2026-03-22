@@ -55,9 +55,9 @@ const char* LosErrorToString(LosError err)
 
     };
 
-    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
+    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0])))
         return "Unknown error";
-    }
+
     return errorStrings[err];
 }
 
@@ -71,8 +71,13 @@ const char* OrbitErrorToString(OrbitError err)
         [ORBIT_ERR_INTERSECTING_SURFACE] = "Orbit intersects surface, use a higher periapsis",
     };
 
-    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
+    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0])))
         return "Unknown error";
-    }
+
     return errorStrings[err];
 }
+
+#define ErrToStr(err) _Generic(err, \
+    OrbitError:    OrbitErrorToString(err), \
+    ResonantError: ResonantErrorToString(err), \
+    LosError:      LosErrorToString(err))
