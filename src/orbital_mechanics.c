@@ -1,6 +1,6 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
-#include "error_enums.c"
+#include "error.c"
 #include "orbit.c"
 #endif
 
