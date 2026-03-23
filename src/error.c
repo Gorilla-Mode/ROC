@@ -16,6 +16,7 @@ const char* ResonantErrorToString(ResonantError err)
         [RES_ERR_NOT_ELLIPTICAL]               = "Target orbit is not elliptical",
         [RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR]   = "Base orbit is not elliptical or circular",
         [RES_ERR_NOT_INTERSECTING]             = "Orbits do not intersect at periapsis or apoapsis",
+        [RES_ERR_PERIAPSIS_BELOW_ATMOSPHERE]   = "Orbit is below atmosphere, use a higher periapsis",
     };
 
     if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {

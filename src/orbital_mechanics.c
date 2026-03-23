@@ -93,7 +93,6 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, Resonan
         return (Orbit){0};
     }
 
-    *err = RES_SUCCESS;
     return resonantOrbit;
 }
 
@@ -137,7 +136,12 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, Resonan
         return (Orbit){0};
     }
 
-    *err = RES_SUCCESS;
+    if (resonantOrbit.Periapsis(&resonantOrbit) <= (f64_t)resonantOrbit.PrimaryBody->AtmHeightM + (f64_t)resonantOrbit.PrimaryBody->EqRadiusM)
+    {
+        *err = RES_ERR_PERIAPSIS_BELOW_ATMOSPHERE;
+        return (Orbit){0};
+    }
+
     return resonantOrbit;
 }
 

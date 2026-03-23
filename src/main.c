@@ -15,36 +15,36 @@ int main(void)
     LosError LOS_Err = 0;
     OrbitError Orbit_Err = 0;
     f64_t r1 = 100000;
-    f64_t a1 = 550000;
+    f64_t a1 = 150000;
     f64_t r2 = 200000;
 
     Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[KERBIN], a1, &Orbit_Err);
     if (Orbit_Err != ORBIT_SUCCESS)
     {
-        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(Orbit_Err));
+        (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Orbit_Err));
         return 0;
     }
 
     Orbit orbit2 = CreateOrbitEllipse(&Kerbol[MOHO], r1, r2, &Orbit_Err);
     if (Orbit_Err != ORBIT_SUCCESS)
     {
-        (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(Orbit_Err));
+        (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Orbit_Err));
         return 0;
     }
 
-    Orbit resonantOrbit = CalcResonantOrbitRetr(&orbit1, 3, &Res_Err);
+    Orbit resonantOrbit = CalcResonantOrbitRetr(&orbit1, 40, &Res_Err);
     if (Res_Err != RES_SUCCESS)
     {
-        (void)fprintf_s(stderr, "Error: %s\n", ResonantErrorToString(Res_Err));
+        (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Res_Err));
         return 0;
     }
 
-    printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &Res_Err));
-    if (Res_Err != RES_SUCCESS)
-    {
-        (void)fprintf_s(stderr, "Error: %s\n", ResonantErrorToString(Res_Err));
-        return 0;
-    }
+    // printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &Res_Err));
+    // if (Res_Err != RES_SUCCESS)
+    // {
+    //     (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Res_Err));
+    //     return 0;
+    // }
 
     printf("Orbital period orbit 1: %lf\n", orbit1.OPeriod(&orbit1));
     printf("Orbital periapsis orbit 1: %lf\n", orbit1.PeriapsisHeight(&orbit1));
