@@ -1,30 +1,9 @@
-﻿typedef enum {
-    RES_SUCCESS = 0,
-    RES_ERR_PERIAPSIS_INTERSECTS_SURFACE,
-    RES_ERR_INVALID_SATELLITE_COUNT,
-    RES_ERR_APOAPSIS_OUTSIDE_SOI,
-    RES_ERR_MISSING_PRIMARY,
-    RES_ERR_NOT_ELLIPTICAL,
-    RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR,
-    RES_ERR_NOT_INTERSECTING,
-} ResonantError;
+﻿#ifndef UNITY_BUILD
+#include "global_typedefs.c"
+#include "orbit.c"
+#endif
 
-typedef enum
-{
-    LOS_SUCCESS = 0,
-    LOS_ERR_INVALID_SATELLITE_COUNT,
-    LOS_ERR_MISSING_PRIMARY,
-    LOS_ERR_ORBIT_NOT_CIRCULAR
-}LosError;
-
-typedef enum
-{
-    ORBIT_SUCCESS = 0,
-    ORBIT_ERR_MISSING_PRIMARY,
-    ORBIT_ERR_BELOW_ATMOSPHERE,
-    ORBIT_ERR_OUTSIDE_SOI,
-    ORBIT_ERR_INTERSECTING_SURFACE
-}OrbitError;
+#include "error.h"
 
 const char* ResonantErrorToString(ResonantError err)
 {
@@ -37,6 +16,7 @@ const char* ResonantErrorToString(ResonantError err)
         [RES_ERR_NOT_ELLIPTICAL]               = "Target orbit is not elliptical",
         [RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR]   = "Base orbit is not elliptical or circular",
         [RES_ERR_NOT_INTERSECTING]             = "Orbits do not intersect at periapsis or apoapsis",
+        [RES_ERR_PERIAPSIS_BELOW_ATMOSPHERE]   = "Orbit is below atmosphere, use a higher periapsis",
     };
 
     if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
@@ -55,9 +35,9 @@ const char* LosErrorToString(LosError err)
 
     };
 
-    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
+    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0])))
         return "Unknown error";
-    }
+
     return errorStrings[err];
 }
 
@@ -71,8 +51,36 @@ const char* OrbitErrorToString(OrbitError err)
         [ORBIT_ERR_INTERSECTING_SURFACE] = "Orbit intersects surface, use a higher periapsis",
     };
 
-    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
+    if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0])))
         return "Unknown error";
-    }
+
     return errorStrings[err];
 }
+
+static bool ValidateLos(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
+{
+    if (orbit->PrimaryBody == nullptr)
+    {
+        *err = LOS_ERR_MISSING_PRIMARY;
+        return false;
+    }
+
+    if (orbit->Eccentricity != 0.0)
+    {
+        *err = LOS_ERR_ORBIT_NOT_CIRCULAR;
+        return false;
+    }
+
+    if (satelliteCount < 3)
+    {
+        *err = LOS_ERR_INVALID_SATELLITE_COUNT;
+        return false;
+    }
+
+    return true;
+}
+
+#define ErrToStr(err) _Generic(err, \
+    OrbitError:    OrbitErrorToString(err), \
+    ResonantError: ResonantErrorToString(err), \
+    LosError:      LosErrorToString(err))

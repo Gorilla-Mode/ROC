@@ -1,7 +1,7 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
 #include "celestial_body.c"
-#include "error_enums.c"
+#include "error.c"
 #endif
 #include <math.h>
 

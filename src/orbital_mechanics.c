@@ -1,6 +1,6 @@
 ﻿#ifndef UNITY_BUILD
 #include "global_typedefs.c"
-#include "error_enums.c"
+#include "error.c"
 #include "orbit.c"
 #endif
 
@@ -93,7 +93,6 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, Resonan
         return (Orbit){0};
     }
 
-    *err = RES_SUCCESS;
     return resonantOrbit;
 }
 
@@ -137,29 +136,19 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, Resonan
         return (Orbit){0};
     }
 
-    *err = RES_SUCCESS;
+    if (resonantOrbit.Periapsis(&resonantOrbit) <= (f64_t)resonantOrbit.PrimaryBody->AtmHeightM + (f64_t)resonantOrbit.PrimaryBody->EqRadiusM)
+    {
+        *err = RES_ERR_PERIAPSIS_BELOW_ATMOSPHERE;
+        return (Orbit){0};
+    }
+
     return resonantOrbit;
 }
 
 bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
-    if (orbit->PrimaryBody == nullptr)
-    {
-        *err = LOS_ERR_MISSING_PRIMARY;
+    if (!ValidateLos(orbit, satelliteCount, err))
         return false;
-    }
-
-    if (orbit->Eccentricity != 0.0)
-    {
-        *err = LOS_ERR_ORBIT_NOT_CIRCULAR;
-        return false;
-    }
-
-    if (satelliteCount < 3)
-    {
-        *err = LOS_ERR_INVALID_SATELLITE_COUNT;
-        return false;
-    }
 
     const f64_t SmajA = orbit->SMajorAxisM;
     const f64_t EqRad = orbit->PrimaryBody->EqRadiusM;
@@ -172,28 +161,8 @@ bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 
 bool AtmosphericOccusion(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
-    if (orbit->PrimaryBody == nullptr)
-    {
-        *err = LOS_ERR_MISSING_PRIMARY;
+    if (!ValidateLos(orbit, satelliteCount, err))
         return false;
-    }
-
-    if (orbit->Eccentricity != 0.0)
-    {
-        *err = LOS_ERR_ORBIT_NOT_CIRCULAR;
-        return false;
-    }
-
-    if (satelliteCount < 3)
-    {
-        *err = LOS_ERR_INVALID_SATELLITE_COUNT;
-        return false;
-    }
-
-    if (orbit->PrimaryBody->AtmHeightM == -1)
-    {
-        return true;
-    }
 
     const f64_t SmajA = orbit->SMajorAxisM;
     const f64_t AtmH = orbit->PrimaryBody->EqRadiusM + orbit->PrimaryBody->AtmHeightM;
