@@ -39,12 +39,12 @@ int main(void)
         return 0;
     }
 
-    // printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &Res_Err));
-    // if (Res_Err != RES_SUCCESS)
-    // {
-    //     (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Res_Err));
-    //     return 0;
-    // }
+    printf("delta v: %lf\n\n", DeltaVCircToEllip(&orbit1, &resonantOrbit, &Res_Err));
+    if (Res_Err != RES_SUCCESS)
+    {
+        (void)fprintf_s(stderr, "Error: %s\n", ErrToStr(Res_Err));
+        return 0;
+    }
 
     printf("Orbital period orbit 1: %lf\n", orbit1.OPeriod(&orbit1));
     printf("Orbital periapsis orbit 1: %lf\n", orbit1.PeriapsisHeight(&orbit1));
