@@ -2,8 +2,9 @@
 
 #include "global_typedefs.c"
 #include "celestial_body.c"
-#include "error.c"
+#include "error.h"
 #include "orbit.c"
+#include "error.c"
 #include "orbital_mechanics.c"
 #include "planets.c"
 #include <stdio.h>
@@ -14,10 +15,10 @@ int main(void)
     LosError LOS_Err = 0;
     OrbitError Orbit_Err = 0;
     f64_t r1 = 100000;
-    f64_t a1 = 2000000;
+    f64_t a1 = 550000;
     f64_t r2 = 200000;
 
-    Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[MOHO], a1, &Orbit_Err);
+    Orbit orbit1 = CreateOrbitCircularAlt(&Kerbol[KERBIN], a1, &Orbit_Err);
     if (Orbit_Err != ORBIT_SUCCESS)
     {
         (void)fprintf_s(stderr, "Error: %s\n", OrbitErrorToString(Orbit_Err));
@@ -31,7 +32,7 @@ int main(void)
         return 0;
     }
 
-    Orbit resonantOrbit = CalcResonantOrbitProg(&orbit1, 3, &Res_Err);
+    Orbit resonantOrbit = CalcResonantOrbitRetr(&orbit1, 3, &Res_Err);
     if (Res_Err != RES_SUCCESS)
     {
         (void)fprintf_s(stderr, "Error: %s\n", ResonantErrorToString(Res_Err));
