@@ -61,8 +61,6 @@ f64_t calcOrbitalAltitude(const Orbit *orbit)
     return orbit->SMajorAxisM - (f64_t)orbit->PrimaryBody->EqRadiusM;
 }
 
-
-
 Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis, OrbitError *err)
 {
     periapsis += (f64_t)primary->EqRadiusM;

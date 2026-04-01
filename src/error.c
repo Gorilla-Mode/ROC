@@ -57,7 +57,7 @@ const char* OrbitErrorToString(OrbitError err)
     return errorStrings[err];
 }
 
-static bool ValidateLos(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
+static bool ValidateLosParams(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
     if (orbit->PrimaryBody == nullptr)
         *err = LOS_ERR_MISSING_PRIMARY;
@@ -91,6 +91,19 @@ static bool ValidateOrbit(const Orbit *orbit, OrbitError *err)
         *err = ORBIT_ERR_BELOW_ATMOSPHERE;
 
     if (*err != ORBIT_SUCCESS)
+        return false;
+    return true;
+}
+
+static bool ValidateResOrbParams(const Orbit *orbit, uint32_t satelliteCount, ResonantError *err)
+{
+    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
+        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
+
+    if (satelliteCount < 3)
+        *err = RES_ERR_INVALID_SATELLITE_COUNT;
+
+    if (*err != RES_SUCCESS)
         return false;
     return true;
 }

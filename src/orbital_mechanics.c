@@ -1,4 +1,5 @@
-﻿#ifndef UNITY_BUILD
+﻿#include "error.h"
+#ifndef UNITY_BUILD
 #include "global_typedefs.c"
 #include "error.c"
 #include "orbit.c"
@@ -54,17 +55,8 @@ f64_t DeltaVCircToEllip(const Orbit *orbitBase, const Orbit *orbitTarget, Resona
 
 Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, ResonantError* err)
 {
-    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
-    {
-        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
+    if (!ValidateResOrbParams(orbit, satteliteCount, err))
         return (Orbit){0};
-    }
-
-    if (satteliteCount < 3)
-    {
-        *err = RES_ERR_INVALID_SATELLITE_COUNT;
-        return (Orbit){0};
-    }
 
     const f64_t period = orbit->OPeriod(orbit);
     const f64_t mu =  orbit->PrimaryBody->GravParam;
@@ -98,17 +90,8 @@ Orbit CalcResonantOrbitProg(const Orbit *orbit, uint32_t satteliteCount, Resonan
 
 Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, ResonantError* err)
 {
-    if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
-    {
-        *err = RES_ERR_APOAPSIS_OUTSIDE_SOI;
+    if (!ValidateResOrbParams(orbit, satteliteCount, err))
         return (Orbit){0};
-    }
-
-    if (satteliteCount < 3)
-    {
-        *err = RES_ERR_INVALID_SATELLITE_COUNT;
-        return (Orbit){0};
-    }
 
     const f64_t period = orbit->OPeriod(orbit);
     const f64_t mu =  orbit->PrimaryBody->GravParam;
@@ -147,7 +130,7 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, Resonan
 
 bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
-    if (!ValidateLos(orbit, satelliteCount, err))
+    if (!ValidateLosParams(orbit, satelliteCount, err))
         return false;
 
     const f64_t SmajA = orbit->SMajorAxisM;
@@ -161,7 +144,7 @@ bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 
 bool AtmosphericOccusion(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
-    if (!ValidateLos(orbit, satelliteCount, err))
+    if (!ValidateLosParams(orbit, satelliteCount, err))
         return false;
 
     const f64_t SmajA = orbit->SMajorAxisM;
