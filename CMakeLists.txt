@@ -8,3 +8,9 @@ add_executable(ROC
 )
 
 target_include_directories(ROC PRIVATE src/)
+
+add_executable(TEST
+        src/test.c
+)
+
+target_include_directories(TEST PRIVATE src/)
