@@ -8,7 +8,8 @@ When building satellite constellations, it's necessary that satellites have the 
 orbital period and proper separation. It's also very time-consuming and inefficient to
 launch a satellite one by one.
 
-This program helps you launch multiple satellites at once. With proper separation and orbital period.
+When launching multiple satellites at once, this program calculates a proper insertion orbit for your satellites.
+Ensuring proper separation between satellites.
 
 ## Features
 
