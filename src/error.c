@@ -57,6 +57,17 @@ const char* OrbitErrorToString(OrbitError err)
     return errorStrings[err];
 }
 
+/**
+ * Validates parameters for Line of Sight (LOS) calculations.
+ * Validates:
+ * - LOS_ERR_MISSING_PRIMARY
+ * - LOS_ERR_ORBIT_NOT_CIRCULAR
+ * - LOS_ERR_INVALID_SATELLITE_COUNT
+ * @param orbit Pointer to the orbit to validate
+ * @param satelliteCount Number of satellites in the constellation
+ * @param err Pointer to LosError enum to store validation result
+ * @return true if all parameters are valid, false otherwise
+ */
 static bool ValidateLosParams(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
     if (orbit->PrimaryBody == nullptr)
@@ -73,6 +84,17 @@ static bool ValidateLosParams(const Orbit *orbit, uint32_t satelliteCount, LosEr
     return true;
 }
 
+/**
+ * Validates orbital parameters for general orbit validity.
+ * Validates:
+ * - ORBIT_ERR_MISSING_PRIMARY
+ * - ORBIT_ERR_INTERSECTING_SURFACE
+ * - ORBIT_ERR_OUTSIDE_SOI
+ * - ORBIT_ERR_BELOW_ATMOSPHERE
+ * @param orbit Pointer to the orbit to validate
+ * @param err Pointer to OrbitError enum to store validation result
+ * @return true if the orbit is valid, false otherwise
+ */
 static bool ValidateOrbit(const Orbit *orbit, OrbitError *err)
 {
     if (orbit->PrimaryBody == nullptr)
@@ -95,6 +117,16 @@ static bool ValidateOrbit(const Orbit *orbit, OrbitError *err)
     return true;
 }
 
+/**
+ * Validates parameters for resonant orbit calculations.
+ * Validates:
+ * - RES_ERR_APOAPSIS_OUTSIDE_SOI
+ * - RES_ERR_INVALID_SATELLITE_COUNT
+ * @param orbit Pointer to the orbit to validate
+ * @param satelliteCount Number of satellites in the constellation
+ * @param err Pointer to ResonantError enum to store validation result
+ * @return true if all parameters are valid, false otherwise
+ */
 static bool ValidateResOrbParams(const Orbit *orbit, uint32_t satelliteCount, ResonantError *err)
 {
     if (orbit->Apoapsis(orbit) > orbit->PrimaryBody->SOI)
