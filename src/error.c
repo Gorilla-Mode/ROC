@@ -60,23 +60,38 @@ const char* OrbitErrorToString(OrbitError err)
 static bool ValidateLos(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
     if (orbit->PrimaryBody == nullptr)
-    {
         *err = LOS_ERR_MISSING_PRIMARY;
-        return false;
-    }
 
     if (orbit->Eccentricity != 0.0)
-    {
         *err = LOS_ERR_ORBIT_NOT_CIRCULAR;
-        return false;
-    }
 
     if (satelliteCount < 3)
-    {
         *err = LOS_ERR_INVALID_SATELLITE_COUNT;
-        return false;
-    }
 
+    if (*err != LOS_SUCCESS)
+        return false;
+    return true;
+}
+
+static bool ValidateOrbit(const Orbit *orbit, OrbitError *err)
+{
+    if (orbit->PrimaryBody == nullptr)
+        *err = ORBIT_ERR_MISSING_PRIMARY;
+
+    if (orbit->PrimaryBody == nullptr)
+        *err = ORBIT_ERR_MISSING_PRIMARY;
+
+    if (calcPeriapsis(orbit) <= (f64_t)orbit->PrimaryBody->EqRadiusM)
+        *err = ORBIT_ERR_INTERSECTING_SURFACE;
+
+    if (calcApoapsis(orbit) > orbit->PrimaryBody->SOI)
+        *err = ORBIT_ERR_OUTSIDE_SOI;
+
+    if (calcPeriapsis(orbit) < (f64_t)orbit->PrimaryBody->EqRadiusM + (f64_t)orbit->PrimaryBody->AtmHeightM)
+        *err = ORBIT_ERR_BELOW_ATMOSPHERE;
+
+    if (*err != ORBIT_SUCCESS)
+        return false;
     return true;
 }
 

@@ -1,4 +1,5 @@
-﻿#ifndef UNITY_BUILD
+﻿#include "error.h"
+#ifndef UNITY_BUILD
 #include "global_typedefs.c"
 #include "celestial_body.c"
 #include "error.c"
@@ -60,21 +61,7 @@ f64_t calcOrbitalAltitude(const Orbit *orbit)
     return orbit->SMajorAxisM - (f64_t)orbit->PrimaryBody->EqRadiusM;
 }
 
-OrbitError GetOrbitalError(const Orbit *orbit)
-{
-    OrbitError err = ORBIT_SUCCESS;
 
-    if (orbit->PrimaryBody == nullptr)
-        err = ORBIT_ERR_MISSING_PRIMARY;
-    if (calcPeriapsis(orbit) <= (f64_t)orbit->PrimaryBody->EqRadiusM)
-        err = ORBIT_ERR_INTERSECTING_SURFACE;
-    if (calcApoapsis(orbit) > orbit->PrimaryBody->SOI)
-        err = ORBIT_ERR_OUTSIDE_SOI;
-    if (calcPeriapsis(orbit) < (f64_t)orbit->PrimaryBody->EqRadiusM + (f64_t)orbit->PrimaryBody->AtmHeightM)
-        err = ORBIT_ERR_BELOW_ATMOSPHERE;
-
-    return err;
-}
 
 Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoapsis, OrbitError *err)
 {
@@ -93,7 +80,8 @@ Orbit CreateOrbitEllipse(const CelestBody *primary, f64_t periapsis, f64_t apoap
         .ApoapsisHeight = calcApoapsisHeight,
     };
 
-    *err = GetOrbitalError(&orbit);
+    if (!ValidateOrbit(&orbit, err))
+        return (Orbit){0};
 
     return orbit;
 }
@@ -112,7 +100,8 @@ Orbit CreateOrbitCircularSmj(const CelestBody *primary, f64_t SMajorAxis, OrbitE
         .ApoapsisHeight = calcApoapsisHeight,
     };
 
-    *err = GetOrbitalError(&orbit);
+    if (!ValidateOrbit(&orbit, err))
+        return (Orbit){0};
 
     return orbit;
 }
@@ -131,7 +120,8 @@ Orbit CreateOrbitCircularAlt(const CelestBody *primary, f64_t altitude, OrbitErr
         .ApoapsisHeight = calcApoapsisHeight,
     };
 
-    *err = GetOrbitalError(&orbit);
+    if (!ValidateOrbit(&orbit, err))
+        return (Orbit){0};
 
     return orbit;
 }

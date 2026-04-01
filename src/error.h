@@ -33,6 +33,6 @@ typedef enum
 typedef struct Orbit Orbit;
 
 static bool ValidateLos(const Orbit *orbit, uint32_t satelliteCount, LosError *err);
-
+static bool ValidateOrbit(const Orbit *orbit, OrbitError *err);
 
 #endif
