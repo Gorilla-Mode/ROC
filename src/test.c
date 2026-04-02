@@ -3,7 +3,6 @@
 #include "windows.h"
 #include "global_typedefs.c"
 #include "celestial_body.c"
-#include "error.h"
 #include "orbit.c"
 #include "error.c"
 #include "orbital_mechanics.c"
