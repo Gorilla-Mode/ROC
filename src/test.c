@@ -10,13 +10,22 @@
 #include "planets.c"
 #include <stdio.h>
 
+//region Macros
+
 #define EPSILON        1e-9
 #define TEXT_GREEN     "\x1b[32m"
-#define TEXT_RED "\x1b[31m"
+#define TEXT_RED       "\x1b[31m"
 #define TEXT_RESET     "\x1b[0m"
 
+#define CREATE_TEST_ORBIT_ALT(alt_value, body_index) \
+    f64_t alt = alt_value; \
+    LosError LosErr = 0; \
+    OrbitError OrbErr = 0; \
+    Orbit Orbit = CreateOrbitCircularAlt(&Kerbol[body_index], alt, &OrbErr)
 
+//endregion
 
+//region String functions
 
 /**
  * Returns string after the first two underscores in the function name. As per naming convention,
@@ -46,6 +55,10 @@ static const char* get_test_name(const char* func_name)
     }
     return func_name;
 }
+
+//endregion
+
+//region Asserts
 
 static bool assert_true(bool condition, const char* func_name, const char* msg)
 {
@@ -82,19 +95,51 @@ static bool assert_greater_than(f64_t actual, f64_t threshold, const char* func_
     return true;
 }
 
+//endregion
+
+//region Test ValidateLOSParams
+
 bool TEST_Error_ValidateLOSParams_MissingPrimary_ReturnsFalse()
 {
-    f64_t alt = 150000;
-    LosError LosErr;
-    OrbitError OrbErr;
-    Orbit OrbitKerbin = CreateOrbitCircularAlt(&Kerbol[KERBIN], alt, &OrbErr);
-    OrbitKerbin.PrimaryBody = nullptr;
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+    Orbit.PrimaryBody = nullptr;
 
-    bool res = ValidateLosParams(&OrbitKerbin, 10, &LosErr);
+    bool res = ValidateLosParams(&Orbit, 10, &LosErr);
 
     return assert_true(!res, __func__, "Missing primary error is not triggered");
 }
 
+bool TEST_Error_ValidateLOSParams_EccentricOrbit_ReturnsFalse()
+{
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+    Orbit.Eccentricity = 0.5;
+
+    bool res = ValidateLosParams(&Orbit, 10, &LosErr);
+
+    return assert_true(!res, __func__, "Eccentric orbit error is not triggered");
+}
+
+bool TEST_Error_ValidateLOSParams_InvalidSatCount_ReturnsFalse()
+{
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+
+    bool res = ValidateLosParams(&Orbit, 2, &LosErr);
+
+    return assert_true(!res, __func__, "Invalid satellite count error is not triggered");
+}
+
+bool TEST_Error_ValidateLOSParams_Valid_ReturnsTrue()
+{
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+
+    bool res = ValidateLosParams(&Orbit, 5, &LosErr);
+
+    return assert_true(res, __func__, "Valid orbit triggers error");
+}
+
+//endregion
+
+//region Test collection
 typedef bool (*TestFunc)(void);
 
 static struct
@@ -102,7 +147,12 @@ static struct
     TestFunc func;
 } tests[] = {
     {TEST_Error_ValidateLOSParams_MissingPrimary_ReturnsFalse},
+    {TEST_Error_ValidateLOSParams_EccentricOrbit_ReturnsFalse},
+    {TEST_Error_ValidateLOSParams_InvalidSatCount_ReturnsFalse},
+    {TEST_Error_ValidateLOSParams_Valid_ReturnsTrue}
 };
+
+//endregion
 
 int main(void)
 {
