@@ -21,6 +21,7 @@
     f64_t alt = alt_value; \
     LosError LosErr = 0; \
     OrbitError OrbErr = 0; \
+    ResonantError ResErr = 0; \
     Orbit Orbit = CreateOrbitCircularAlt(&Kerbol[body_index], alt, &OrbErr)
 
 //endregion
@@ -200,7 +201,40 @@ bool TEST_Error_ValidateOrbit_Valid_ReturnsTrue()
 
 //endregion
 
+//region Test ValidateResParams
+
+bool Test_Error_ValidateResOrbParams_OutsideSOI_ReturnsFalse()
+{
+    CREATE_TEST_ORBIT_ALT(100000, KERBIN);
+    Orbit.SMajorAxisM += 100000000;
+
+    bool res  = ValidateResOrbParams(&Orbit, 10, &ResErr);
+
+    return assert_false(res, __func__, "Orbit outside SOI error is not triggered");
+}
+
+bool Test_Error_ValidateResOrbParams_InvalidSatCount_ReturnsFalse()
+{
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+
+    bool res = ValidateResOrbParams(&Orbit, 2, &ResErr);
+
+    return assert_false(res, __func__, "Invalid satellite count error is not triggered");
+}
+
+bool Test_Error_ValidateResOrbParams_Valid_ReturnsTrue()
+{
+    CREATE_TEST_ORBIT_ALT(150000, KERBIN);
+
+    bool res = ValidateResOrbParams(&Orbit, 10, &ResErr);
+
+    return assert_true(res, __func__, "Valid orbit triggers error");
+}
+
+//endregion
+
 //region Test collection
+
 typedef bool (*TestFunc)(void);
 
 static struct
@@ -215,7 +249,10 @@ static struct
     {TEST_Error_ValidateOrbit_SurfIntersect_ReturnsFalse},
     {TEST_Error_ValidateOrbit_OutsideSOI_ReturnsFalse},
     {TEST_Error_ValidateOrbit_BelowAtmosphere_ReturnsFalse},
-    {TEST_Error_ValidateOrbit_Valid_ReturnsTrue}
+    {TEST_Error_ValidateOrbit_Valid_ReturnsTrue},
+    {Test_Error_ValidateResOrbParams_OutsideSOI_ReturnsFalse},
+    {Test_Error_ValidateResOrbParams_InvalidSatCount_ReturnsFalse},
+    {Test_Error_ValidateResOrbParams_Valid_ReturnsTrue}
 };
 
 //endregion
