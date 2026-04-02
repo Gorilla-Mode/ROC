@@ -5,7 +5,7 @@
 ## About
 
 Satellite constellations require satellites to maintain the exact same orbital period with proper
-separation, five satellites should for a (near) perfect pentagon.
+separation, five satellites should form a (near) perfect pentagon.
 
 **ROC** solves this by calculating the insertion orbit for your satellites, ensuring proper separation and orbital
 period for multiple satellites in a single launch.
