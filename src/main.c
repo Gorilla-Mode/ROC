@@ -7,7 +7,6 @@
 #include "error.c"
 #include "orbital_mechanics.c"
 #include "planets.c"
-#include <stdio.h>
 #include <curses.h>
 
 typedef struct {
@@ -61,13 +60,18 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res)
     box(win, 0, 0);
     mvwprintw(win, 0, 2, " Result ");
 
-    mvwprintw(win, 1, 2, "Target Period:   %.lf s", o1->OPeriod(o1));
-    mvwprintw(win, 2, 2, "Resonant Period: %.lf s", res->OPeriod(res));
-    mvwprintw(win, 3, 2, "DeltaV:          %.2f m/s",
+    mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res->ApoapsisHeight(res));
+    mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res->PeriapsisHeight(res));
+    mvwprintw(win, 3, 2, "Eccentricity:       %.2lf", res->Eccentricity);
+
+    mvwprintw(win, 5, 2, "Target Period:      %lf s", o1->OPeriod(o1));
+    mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res->OPeriod(res));
+    mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
               DeltaVCircToEllip(o1, res, nullptr));
-    mvwprintw(win, 5, 2, "Resonant state:  %s", ErrToStr(resErr));
-    mvwprintw(win, 6, 2, "Orbit state:     %s", ErrToStr(orbitErr));
-    mvwprintw(win, 7, 2, "LOS state:       %s", ErrToStr(resErr));
+
+    mvwprintw(win, 9, 2, "Resonant state:    %s", ErrToStr(resErr));
+    mvwprintw(win, 10, 2, "Orbit state:       %s", ErrToStr(orbitErr));
+    mvwprintw(win, 11, 2, "LOS state:         %s", ErrToStr(resErr));
 
     wrefresh(win);
 }
@@ -120,13 +124,13 @@ int32_t main(void)
     int32_t rows, cols;
     getmaxyx(stdscr, rows, (cols));
 
-    int32_t footer_h = 3;
-    int32_t main_h   = rows - footer_h;
+    int32_t footer_h    = 3;
+    int32_t main_h      = rows - footer_h;
 
-    int32_t left_w   = cols / 2;
-    int32_t right_w  = cols - left_w;
+    int32_t left_w      = cols / 2;
+    int32_t right_w     = cols - left_w;
 
-    int32_t half_h   = main_h / 2;
+    int32_t half_h      = main_h / 2;
 
     WINDOW *left_top    = newwin(half_h +5, left_w, 0, 0);
     WINDOW *left_bottom = newwin(main_h - half_h -5, left_w, half_h + 5, 0);
@@ -169,8 +173,6 @@ int32_t main(void)
         DrawFooter(footer);
 
         int32_t ch = getch();
-
-
 
         switch (ch)
         {
