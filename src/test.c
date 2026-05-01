@@ -232,6 +232,32 @@ bool Test_Error_ValidateResOrbParams_Valid_ReturnsTrue()
 
 //endregion
 
+//region Test DeltaVCirclEllip
+
+bool TEST_OrbitalMech_DeltaVCircToEllip_Valid_ReturnsNoErrors()
+{
+    OrbitError orbErr = 0;
+    Orbit orbitBase = CreateOrbitCircularAlt(&Kerbol[KERBIN], 150000, &orbErr);
+    assert_true(orbErr == ORBIT_SUCCESS, __func__, "Base orbit creation failed");
+
+    Orbit orbitTarget = CreateOrbitEllipse(&Kerbol[KERBIN], 150000, 250000, &orbErr);
+    assert_true(orbErr == ORBIT_SUCCESS, __func__, "Target orbit creation failed");
+
+    ResonantError resErr = 0;
+    DeltaVCircToEllip(&orbitBase, &orbitTarget, &resErr);
+    assert_false(resErr == RES_ERR_NOT_ELLIPTICAL, __func__,
+        "Delta V calcualtion failed: valid returns elliptic error");
+    assert_false(resErr == RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR, __func__,
+       "Delta V calcualtion failed: valid returns elliptic error");
+    assert_false(resErr == RES_ERR_MISSING_PRIMARY, __func__,
+        "Delta V calcualtion failed: orbit with primary returns missing primary error");
+    assert_false(resErr == RES_ERR_NOT_INTERSECTING, __func__,
+        "Delta V calcualtion failed: intersecting orbits returns not intersecting error");
+    return true;
+}
+
+//endregion
+
 //region Test collection
 
 typedef bool (*TestFunc)(void);
@@ -251,7 +277,8 @@ static struct
     {TEST_Error_ValidateOrbit_Valid_ReturnsTrue},
     {Test_Error_ValidateResOrbParams_OutsideSOI_ReturnsFalse},
     {Test_Error_ValidateResOrbParams_InvalidSatCount_ReturnsFalse},
-    {Test_Error_ValidateResOrbParams_Valid_ReturnsTrue}
+    {Test_Error_ValidateResOrbParams_Valid_ReturnsTrue},
+    {TEST_OrbitalMech_DeltaVCircToEllip_Valid_ReturnsNoErrors}
 };
 
 //endregion
