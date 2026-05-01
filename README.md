@@ -1,39 +1,54 @@
 # ROC - Resonant Orbit Calc(ulator)
 
-Simple program to calculate elliptical resonant orbits for Kerbal Space Program.
+>CLI tool to calculate elliptical resonant orbits for satellite constellations in Kerbal Space Program.
 
-## Usage
+## About
 
-When building satellite constellations, it's necessary that satellites have the exact same
-orbital period and proper separation. It's also very time-consuming and inefficient to
-launch a satellite one by one.
+Satellite constellations require satellites to maintain the exact same orbital period with proper
+separation, five satellites should form a (near) perfect pentagon.
 
-When launching multiple satellites at once, this program calculates a proper insertion orbit for your satellites.
-Ensuring proper separation between satellites.
+**ROC** solves this by calculating the insertion orbit for your satellites, ensuring proper separation and orbital
+period for multiple satellites in a single launch.
+
+That being said, you could always just build a big spinning gizmo and launch 100 satellites into space, prob more kerbal to
+do that.
 
 ## Features
 
-- **Resonant Orbit Calculations**: Calculate orbital parameters for resonant elliptical orbits
-- **Apoapsis/Periapsis Target**: Use either the apoapsis or periapsis as the target for insertion
-- **Delta-V Calculations**: Determine the delta-v required for orbital insertion
-- **Celestial Body Data**: Built-in data for KSP celestial bodies
-- **Orbital Error Handling**: Accounts for line of sight, SOI, atmosphere intersection, etc.
+- **Resonant Orbit Calculations** - Calculate orbital parameters for resonant elliptical orbits
+- **Apoapsis/Periapsis Target** - Use either the apoapsis or periapsis as the insertion target
+- **Delta-V Calculations** - Determine the delta-v required for orbital insertion
+- **Celestial Body Data** - Built-in data for all KSP celestial bodies
+- **Orbital Error Handling** - Accounts for line of sight, SOI, and atmosphere intersection
 
-##  Build
+## Build
 
-- Standard: C23
-- Compiler: MinGW-w64
-- Target: Windows
-- CMake 4.1 (If you use Cmake)
+| Component | Specification |
+|-----------|---------------|
+| Standard  | C23           |
+| Compiler  | MinGW-w64     |
+| Platform  | Windows       |
+| Build     | CMake 4.1+    |
 
 ## Dependencies
-- PDcurses
 
-## Status
+- **PDcurses** - Terminal UI library
+
+## Testing
+
+A separate executable is provided for unit testing
+
+- **Orbital Calculations** 
+- **Error Handling** 
+
+## Feature Status
+
 - [x] Resonant Orbit Calculations
 - [x] Apoapsis/Periapsis Target
 - [x] Delta-V Calculations
 - [x] Celestial Body Data
-- [ ] Error Handling
+- [x] Error Handling
+- [ ] Unit Tests (WIP)
 - [ ] User Input
-- [ ] UI
+- [ ] User Interface
+- [ ] Visualisation
