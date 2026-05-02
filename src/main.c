@@ -22,6 +22,7 @@ typedef struct {
     OrbitError orbitErr;
     ResonantError resErr;
     int32_t precision;
+    uint32_t satelliteCount;
 } UIState;
 
 typedef Orbit (*ResonantFunc)(const Orbit *orbit, uint32_t satelliteCount, ResonantError* err);
@@ -113,7 +114,7 @@ void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *U
 
     mvwprintw(win, 1, 2, "Altitude:   %.00f m", altitude);
     mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
-    mvwprintw(win, 3, 2, "Satellites: %d", 40);
+    mvwprintw(win, 3, 2, "Satellites: %d", UIState->satelliteCount);
     mvwprintw(win, 4, 2, "Mode:       %s", ResonantModeToString(UIState->resMode));
     mvwprintw(win, 5, 2, "Precision:  %d m", UIState->precision);
 
@@ -124,7 +125,7 @@ void DrawFooter(WINDOW *win)
 {
     werase(win);
     box(win, 0, 0);
-    mvwprintw(win, 1, 2, "q = quit | up/down = change body | left/right = change altitude | m = change mode | p = change precision");
+    mvwprintw(win, 1, 2, "q: quit | up/down: body | left/right: altitude | m: mode | p: precision | w/s: satellite");
 
     wrefresh(win);
 }
@@ -172,6 +173,7 @@ int32_t main(void)
     state.selected_body = MOHO;
     state.altitude = 150000;
     state.precision = 1000;
+    state.satelliteCount = 3;
 
     bool running = true;
 
@@ -192,7 +194,7 @@ int32_t main(void)
 
         Orbit resOrbit = func(
             &orbit1,
-            40,
+            state.satelliteCount,
             &state.resErr
         );
 
@@ -216,6 +218,14 @@ int32_t main(void)
 
             case 'm':
                 state.resMode = (state.resMode + 1) % 2;
+            break;
+
+            case 'w':
+                state.satelliteCount++;
+            break;
+
+            case 's':
+                if (state.satelliteCount > 3) state.satelliteCount--;
             break;
 
             case KEY_UP:
