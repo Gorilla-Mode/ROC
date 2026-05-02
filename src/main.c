@@ -9,20 +9,47 @@
 #include "planets.c"
 #include <curses.h>
 
+typedef enum
+{
+    MODE_PROGRADE,
+    MODE_RETROGRADE
+} ResonantMode;
+
 typedef struct {
     int32_t selected_body;
     f64_t altitude;
+    ResonantMode resMode;
+    OrbitError orbitErr;
+    ResonantError resErr;
+    int32_t precision;
 } UIState;
 
-OrbitError orbitErr = 0;
-ResonantError resErr = 0;
-int32_t precision = 1000;
+typedef Orbit (*ResonantFunc)(const Orbit *orbit, uint32_t satelliteCount, ResonantError* err);
+
+ResonantFunc GetResonantFunc(ResonantMode mode)
+{
+    switch (mode)
+    {
+        case MODE_PROGRADE: return CalcResonantOrbitProg;
+        case MODE_RETROGRADE: return CalcResonantOrbitRetr;
+        default: return nullptr;
+    }
+}
+
+char* ResonantModeToString(ResonantMode mode)
+{
+    switch (mode)
+    {
+        case MODE_PROGRADE:   return "Prograde";
+        case MODE_RETROGRADE: return "Retrograde";
+        default:              return "Unknown";
+    }
+}
 
 void DrawBodyList(WINDOW *win, int32_t selected)
 {
     werase(win);
     box(win, 0, 0);
-    mvwprintw(win, 0, 2, " Bodies ");
 
     for (int32_t i = 0; i < BODY_COUNT; ++i)
     {
@@ -33,6 +60,7 @@ void DrawBodyList(WINDOW *win, int32_t selected)
         if (i == selected) wattroff(win, A_REVERSE);
     }
 
+    mvwprintw(win, 0, 2, " Bodies ");
     wrefresh(win);
 }
 
@@ -54,7 +82,7 @@ void DrawBodyInfo(WINDOW *win, int32_t selected)
     wrefresh(win);
 }
 
-void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res)
+void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIState)
 {
     werase(win);
     box(win, 0, 0);
@@ -69,14 +97,14 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res)
     mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
               DeltaVCircToEllip(o1, res, nullptr));
 
-    mvwprintw(win, 9, 2, "Resonant state:    %s", ErrToStr(resErr));
-    mvwprintw(win, 10, 2, "Orbit state:       %s", ErrToStr(orbitErr));
-    mvwprintw(win, 11, 2, "LOS state:         %s", ErrToStr(resErr));
+    mvwprintw(win, 9, 2, "Resonant state:     %s", ErrToStr(UIState->resErr));
+    mvwprintw(win, 10, 2, "Orbit state:        %s", ErrToStr(UIState->orbitErr));
+    mvwprintw(win, 11, 2, "LOS state:          %s", ErrToStr(UIState->resErr));
 
     wrefresh(win);
 }
 
-void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1)
+void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *UIState)
 {
 
     werase(win);
@@ -86,8 +114,8 @@ void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1)
     mvwprintw(win, 1, 2, "Altitude:   %.00f m", altitude);
     mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
     mvwprintw(win, 3, 2, "Satellites: %d", 40);
-    mvwprintw(win, 4, 2, "Mode:       Retrograde");
-    mvwprintw(win, 5, 2, "Precision:  %d m", precision);
+    mvwprintw(win, 4, 2, "Mode:       %s", ResonantModeToString(UIState->resMode));
+    mvwprintw(win, 5, 2, "Precision:  %d m", UIState->precision);
 
     wrefresh(win);
 }
@@ -101,14 +129,14 @@ void DrawFooter(WINDOW *win)
     wrefresh(win);
 }
 
-void changePrecision()
+void changePrecision(UIState *UIState)
 {
-    switch (precision)
+    switch (UIState->precision)
     {
-        case 1000: precision = 100; break;
-        case 100: precision = 10; break;
-        case 10: precision = 1; break;
-        case 1: precision = 1000; break;
+        case 1000: UIState->precision = 100; break;
+        case 100:  UIState->precision = 10; break;
+        case 10:   UIState->precision = 1; break;
+        case 1:    UIState->precision = 1000; break;
         default: break;
     }
 }
@@ -141,7 +169,7 @@ int32_t main(void)
     WINDOW *footer      = newwin(footer_h, cols, main_h, 0);
 
     UIState state = {0};
-    state.selected_body = 0;
+    state.selected_body = MOHO;
     state.altitude = 150000;
 
     bool running = true;
@@ -151,25 +179,26 @@ int32_t main(void)
 
     while (running)
     {
-        resErr = 0;
-        orbitErr = 0;
+        state.resErr = 0;
+        state.orbitErr = 0;
+        ResonantFunc func = GetResonantFunc(state.resMode);
 
         Orbit orbit1 = CreateOrbitCircularAlt(
             &Kerbol[state.selected_body],
             state.altitude,
-            &orbitErr
+            &state.orbitErr
         );
 
-        Orbit resOrbit = CalcResonantOrbitRetr(
+        Orbit resOrbit = func(
             &orbit1,
             40,
-            &resErr
+            &state.resErr
         );
 
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);
-        DrawResults(right_top, &orbit1, &resOrbit);
-        DrawControls(right_bot, state.altitude, &orbit1);
+        DrawResults(right_top, &orbit1, &resOrbit, &state);
+        DrawControls(right_bot, state.altitude, &orbit1, &state);
         DrawFooter(footer);
 
         int32_t ch = getch();
@@ -181,7 +210,11 @@ int32_t main(void)
                 break;
 
             case 'p':
-                changePrecision();
+                changePrecision(&state);
+            break;
+
+            case 'm':
+                state.resMode = (state.resMode + 1) % 2;
             break;
 
             case KEY_UP:
@@ -195,12 +228,12 @@ int32_t main(void)
                 break;
 
             case KEY_RIGHT:
-                state.altitude += precision;
+                state.altitude += state.precision;
                 break;
 
             case KEY_LEFT:
-                state.altitude -= precision;
-                if (state.altitude < precision) state.altitude = precision;
+                state.altitude -= state.precision;
+                if (state.altitude < state.precision) state.altitude = state.precision;
                 break;
             default: break;
         }
