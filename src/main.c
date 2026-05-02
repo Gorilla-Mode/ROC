@@ -90,14 +90,17 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
     box(win, 0, 0);
     mvwprintw(win, 0, 2, " Result ");
 
-    mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res->ApoapsisHeight(res));
-    mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res->PeriapsisHeight(res));
-    mvwprintw(win, 3, 2, "Eccentricity:       %.2lf", res->Eccentricity);
+    if (UIState->resErr == RES_SUCCESS && UIState->orbitErr == ORBIT_SUCCESS && UIState->losErr == LOS_SUCCESS)
+    {
+        mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res->ApoapsisHeight(res));
+        mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res->PeriapsisHeight(res));
+        mvwprintw(win, 3, 2, "Eccentricity:       %.2lf", res->Eccentricity);
 
-    mvwprintw(win, 5, 2, "Target Period:      %lf s", o1->OPeriod(o1));
-    mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res->OPeriod(res));
-    mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
-              DeltaVCircToEllip(o1, res, nullptr));
+        mvwprintw(win, 5, 2, "Target Period:      %lf s", o1->OPeriod(o1));
+        mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res->OPeriod(res));
+        mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
+                  DeltaVCircToEllip(o1, res, nullptr));
+    }
 
     mvwprintw(win, 9, 2, "Resonant state:     ");
     int32_t color = (UIState->resErr == RES_SUCCESS) ? 1 : 2;
@@ -128,7 +131,14 @@ void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *U
     mvwprintw(win, 0, 2, " Input ");
 
     mvwprintw(win, 1, 2, "Altitude:   %.00f m", altitude);
-    mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
+    if (UIState->resErr == RES_SUCCESS && UIState->orbitErr == ORBIT_SUCCESS && UIState->losErr == LOS_SUCCESS)
+    {
+        mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
+    }
+    else
+    {
+        mvwprintw(win, 2, 2, "Period:     0 s");
+    }
     mvwprintw(win, 3, 2, "Satellites: %d", UIState->satelliteCount);
     mvwprintw(win, 4, 2, "Mode:       %s", ResonantModeToString(UIState->resMode));
     mvwprintw(win, 5, 2, "Precision:  %d m", UIState->precision);
@@ -200,27 +210,43 @@ int32_t main(void)
     bool running = true;
     while (running)
     {
-        state.resErr = 0;
-        state.orbitErr = 0;
         ResonantFunc func = GetResonantFunc(state.resMode);
-
-        Orbit orbit1 = CreateOrbitCircularAlt(
+        Orbit insertOrbit;
+        Orbit targetOrbit = CreateOrbitCircularAlt(
             &Kerbol[state.selected_body],
             state.altitude,
             &state.orbitErr
         );
 
-        Orbit resOrbit = func(
-            &orbit1,
-            state.satelliteCount,
-            &state.resErr
-        );
+        if (state.orbitErr == ORBIT_SUCCESS && state.resErr == RES_SUCCESS && state.losErr == LOS_SUCCESS)
+        {
+            insertOrbit = func(
+                &targetOrbit,
+                state.satelliteCount,
+                &state.resErr
+            );
+        }
+
+        //Todo: fix this shit
+        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_ORBIT_NOT_CIRCULAR;
+        }
+        if (!LineofSight(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_MISSING_PRIMARY;
+        }
+
 
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);
-        DrawResults(right_top, &orbit1, &resOrbit, &state);
-        DrawControls(right_bot, state.altitude, &orbit1, &state);
+        DrawResults(right_top, &targetOrbit, &insertOrbit, &state);
+        DrawControls(right_bot, state.altitude, &targetOrbit, &state);
         DrawFooter(footer);
+
+        state.orbitErr = ORBIT_SUCCESS;
+        state.resErr = RES_SUCCESS;
+        state.losErr = LOS_SUCCESS;
 
         int32_t ch = getch();
 
@@ -243,7 +269,7 @@ int32_t main(void)
             break;
 
             case 's':
-                if (state.satelliteCount > 3) state.satelliteCount--;
+                if (state.satelliteCount > 0) state.satelliteCount--;
             break;
 
             case KEY_UP:
