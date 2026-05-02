@@ -135,6 +135,10 @@ void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *U
     {
         mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
     }
+    else
+    {
+        mvwprintw(win, 2, 2, "Period:     0 s");
+    }
     mvwprintw(win, 3, 2, "Satellites: %d", UIState->satelliteCount);
     mvwprintw(win, 4, 2, "Mode:       %s", ResonantModeToString(UIState->resMode));
     mvwprintw(win, 5, 2, "Precision:  %d m", UIState->precision);
@@ -207,8 +211,8 @@ int32_t main(void)
     while (running)
     {
         ResonantFunc func = GetResonantFunc(state.resMode);
-        Orbit resOrbit;
-        Orbit orbit1 = CreateOrbitCircularAlt(
+        Orbit insertOrbit;
+        Orbit targetOrbit = CreateOrbitCircularAlt(
             &Kerbol[state.selected_body],
             state.altitude,
             &state.orbitErr
@@ -216,17 +220,28 @@ int32_t main(void)
 
         if (state.orbitErr == ORBIT_SUCCESS && state.resErr == RES_SUCCESS && state.losErr == LOS_SUCCESS)
         {
-            resOrbit = func(
-                &orbit1,
+            insertOrbit = func(
+                &targetOrbit,
                 state.satelliteCount,
                 &state.resErr
             );
         }
 
+        //Todo: fix this shit
+        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_ORBIT_NOT_CIRCULAR;
+        }
+        if (!LineofSight(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_MISSING_PRIMARY;
+        }
+
+
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);
-        DrawResults(right_top, &orbit1, &resOrbit, &state);
-        DrawControls(right_bot, state.altitude, &orbit1, &state);
+        DrawResults(right_top, &targetOrbit, &insertOrbit, &state);
+        DrawControls(right_bot, state.altitude, &targetOrbit, &state);
         DrawFooter(footer);
 
         state.orbitErr = ORBIT_SUCCESS;
