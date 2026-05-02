@@ -227,16 +227,15 @@ int32_t main(void)
             );
         }
 
-        //Todo: fix this shit
-        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
-        {
-            state.losErr = LOS_ERR_ORBIT_NOT_CIRCULAR;
-        }
         if (!LineofSight(&targetOrbit, state.satelliteCount, &state.losErr))
         {
-            state.losErr = LOS_ERR_MISSING_PRIMARY;
+            state.losErr = LOS_ERR_OCCLUDED_BY_SURFACE;
         }
 
+        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_OCCLUDED_BY_ATMOSPHERE;
+        }
 
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);

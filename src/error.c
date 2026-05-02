@@ -32,6 +32,8 @@ const char* LosErrorToString(LosError err)
         [LOS_ERR_INVALID_SATELLITE_COUNT]  = "Satellite count must be at least 3",
         [LOS_ERR_MISSING_PRIMARY]          = "Missing primary body",
         [LOS_ERR_ORBIT_NOT_CIRCULAR]       = "Orbit is not circular",
+        [LOS_ERR_OCCLUDED_BY_SURFACE]      = "Occluded by surface, raise target",
+        [LOS_ERR_OCCLUDED_BY_ATMOSPHERE]   = "Occluded by atmosphere, raise taret",
 
     };
 
