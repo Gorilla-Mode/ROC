@@ -171,6 +171,7 @@ int32_t main(void)
     UIState state = {0};
     state.selected_body = MOHO;
     state.altitude = 150000;
+    state.precision = 1000;
 
     bool running = true;
 
