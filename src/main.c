@@ -21,6 +21,7 @@ typedef struct {
     ResonantMode resMode;
     OrbitError orbitErr;
     ResonantError resErr;
+    LosError losErr;
     int32_t precision;
     uint32_t satelliteCount;
 } UIState;
@@ -98,9 +99,23 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
     mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
               DeltaVCircToEllip(o1, res, nullptr));
 
-    mvwprintw(win, 9, 2, "Resonant state:     %s", ErrToStr(UIState->resErr));
-    mvwprintw(win, 10, 2, "Orbit state:        %s", ErrToStr(UIState->orbitErr));
-    mvwprintw(win, 11, 2, "LOS state:          %s", ErrToStr(UIState->resErr));
+    mvwprintw(win, 9, 2, "Resonant state:     ");
+    int32_t color = (UIState->resErr == RES_SUCCESS) ? 1 : 2;
+    wattron(win, COLOR_PAIR(color));
+    wprintw(win, "%s", ErrToStr(UIState->resErr));
+    wattroff(win, COLOR_PAIR(color));
+
+    mvwprintw(win, 10, 2, "Orbit state:        ");
+    color = (UIState->orbitErr == ORBIT_SUCCESS) ? 1 : 2;
+    wattron(win, COLOR_PAIR(color));
+    wprintw(win, "%s", ErrToStr(UIState->orbitErr));
+    wattroff(win, COLOR_PAIR(color));
+
+    mvwprintw(win, 11, 2, "LOS state:          ");
+    color = (UIState->losErr == LOS_SUCCESS) ? 1 : 2;
+    wattron(win, COLOR_PAIR(color));
+    wprintw(win, "%s", ErrToStr(UIState->losErr));
+    wattroff(win, COLOR_PAIR(color));
 
     wrefresh(win);
 }
@@ -145,6 +160,9 @@ void changePrecision(UIState *UIState)
 int32_t main(void)
 {
     initscr();
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_RED,   COLOR_BLACK);
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
@@ -174,12 +192,12 @@ int32_t main(void)
     state.altitude = 150000;
     state.precision = 1000;
     state.satelliteCount = 3;
-
-    bool running = true;
+    state.resMode = MODE_PROGRADE;
 
     refresh();
     doupdate();
 
+    bool running = true;
     while (running)
     {
         state.resErr = 0;
@@ -249,6 +267,8 @@ int32_t main(void)
             default: break;
         }
     }
+
+
 
     endwin();
     return 0;
