@@ -9,7 +9,8 @@ CelestBody Kerbol[] = {
         .GravParam = 1.6860938e11,
         .EqRadiusM = 250000,
         .AtmHeightM = -1,
-        .SOI = 9646663.0
+        .SOI = 9646663.0,
+        .Name = "Moho"
     },
     {
         //Eve
@@ -17,7 +18,8 @@ CelestBody Kerbol[] = {
         .GravParam = 8.1717302e12,
         .EqRadiusM = 700000,
         .AtmHeightM = 90000,
-        .SOI = 85109365
+        .SOI = 85109365,
+        .Name = "Eve"
     },
     {
         //Gilly
@@ -25,7 +27,8 @@ CelestBody Kerbol[] = {
         .GravParam = 8289449.80,
         .EqRadiusM = 13000,
         .AtmHeightM = -1,
-        .SOI = 126123.27
+        .SOI = 126123.27,
+        .Name = "Gilly"
     },
     {
         //Kerbin
@@ -33,7 +36,8 @@ CelestBody Kerbol[] = {
         .GravParam = 3.5316000e12,
         .EqRadiusM = 600000,
         .AtmHeightM = 70000,
-        .SOI = 84159286.0
+        .SOI = 84159286.0,
+        .Name = "Kerbin"
     },
     {
         //Mun
@@ -41,7 +45,8 @@ CelestBody Kerbol[] = {
         .GravParam = 6.5138398e10,
         .EqRadiusM = 200000,
         .AtmHeightM = -1,
-        .SOI = 2429559.1
+        .SOI = 2429559.1,
+        .Name = "Mun"
     },
     {
         //Minmus
@@ -49,7 +54,8 @@ CelestBody Kerbol[] = {
         .GravParam = 1.7658000e9,
         .EqRadiusM = 60000,
         .AtmHeightM = -1,
-        .SOI = 2247428.4
+        .SOI = 2247428.4,
+        .Name = "Minmus"
     },
     {
         //Duna
@@ -57,7 +63,8 @@ CelestBody Kerbol[] = {
         .GravParam = 3.0136321e11,
         .EqRadiusM = 320000,
         .AtmHeightM = 50000,
-        .SOI = 47821949.0
+        .SOI = 47821949.0,
+        .Name = "Duna"
     },
     {
         //Ike
@@ -65,7 +72,8 @@ CelestBody Kerbol[] = {
         .GravParam = 1.8568369e10,
         .EqRadiusM = 130000,
         .AtmHeightM = -1,
-        .SOI = 1049598.9
+        .SOI = 1049598.9,
+        .Name = "Ike"
     },
     {
         //Dres
@@ -73,7 +81,8 @@ CelestBody Kerbol[] = {
         .GravParam = 2.1484489e10,
         .EqRadiusM = 138000,
         .AtmHeightM = -1,
-        .SOI = 32832840.0
+        .SOI = 32832840.0,
+        .Name = "Dres"
     },
     {
         //Jool
@@ -81,7 +90,8 @@ CelestBody Kerbol[] = {
         .GravParam = 2.8252800e14,
         .EqRadiusM = 6000000,
         .AtmHeightM = 200000,
-        .SOI = 2.4559852e9
+        .SOI = 2.4559852e9,
+        .Name = "Jool"
     },
     {
         //Laythe
@@ -89,7 +99,8 @@ CelestBody Kerbol[] = {
         .GravParam = 1.9620000e12,
         .EqRadiusM = 500000,
         .AtmHeightM = 50000,
-        .SOI = 3723645.8
+        .SOI = 3723645.8,
+        .Name = "Laythe"
     },
     {
         //Vall
@@ -97,7 +108,8 @@ CelestBody Kerbol[] = {
         .GravParam = 2.0748150e11,
         .EqRadiusM = 300000,
         .AtmHeightM = -1,
-        .SOI = 2406401.4
+        .SOI = 2406401.4,
+        .Name = "Vall"
     },
     {
         //Tylo
@@ -105,7 +117,8 @@ CelestBody Kerbol[] = {
         .GravParam = 2.8252800e12,
         .EqRadiusM = 6000000,
         .AtmHeightM = -1,
-        .SOI = 10856518
+        .SOI = 10856518,
+        .Name = "Tylo"
     },
     {
         //Bop
@@ -113,7 +126,8 @@ CelestBody Kerbol[] = {
         .GravParam = 2.4868349e9,
         .EqRadiusM = 65000,
         .AtmHeightM = -1,
-        .SOI = 1221060.9
+        .SOI = 1221060.9,
+        .Name = "Bop"
     },
     {
         //Pol
@@ -121,7 +135,8 @@ CelestBody Kerbol[] = {
         .GravParam = 7.2170208e8,
         .EqRadiusM = 44000,
         .AtmHeightM = -1,
-        .SOI = 1042138.9
+        .SOI = 1042138.9,
+        .Name = "Pol"
     },
     {
         //Eeloo
@@ -129,6 +144,7 @@ CelestBody Kerbol[] = {
         .GravParam = 5.5417694e11,
         .EqRadiusM = 2100000,
         .AtmHeightM = -1,
-        .SOI = 1.1908294e8
+        .SOI = 1.1908294e8,
+        .Name = "Eeloo"
     }
 };

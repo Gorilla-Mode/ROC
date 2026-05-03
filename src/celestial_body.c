@@ -26,6 +26,7 @@ struct CelestBody
     uint64_t EqRadiusM;
     int32_t AtmHeightM;
     f64_t SOI;
+    char* Name;
 };
 
 enum CelestBodyKey
@@ -33,5 +34,5 @@ enum CelestBodyKey
     MOHO, EVE, GILLY, KERBIN,
     MUN, MINMUS, DUNA, IKE,
     DRES, JOOL, LAYTHE, VALL,
-    TYLO, BOP, POL, EELOO
+    TYLO, BOP, POL, EELOO, BODY_COUNT
 };

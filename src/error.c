@@ -98,10 +98,10 @@ static bool ValidateLosParams(const Orbit *orbit, uint32_t satelliteCount, LosEr
 static bool ValidateOrbit(const Orbit *orbit, OrbitError *err)
 {
     if (orbit->PrimaryBody == nullptr)
+    {
         *err = ORBIT_ERR_MISSING_PRIMARY;
-
-    if (orbit->PrimaryBody == nullptr)
-        *err = ORBIT_ERR_MISSING_PRIMARY;
+        return false; //Must return, otherwise primary is dereferenced
+    }
 
     if (calcPeriapsis(orbit) <= (f64_t)orbit->PrimaryBody->EqRadiusM)
         *err = ORBIT_ERR_INTERSECTING_SURFACE;
