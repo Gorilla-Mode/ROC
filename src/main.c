@@ -94,7 +94,7 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
     {
         mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res->ApoapsisHeight(res));
         mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res->PeriapsisHeight(res));
-        mvwprintw(win, 3, 2, "Eccentricity:       %.2lf", res->Eccentricity);
+        mvwprintw(win, 3, 2, "Eccentricity:       %lf", res->Eccentricity);
 
         mvwprintw(win, 5, 2, "Target Period:      %lf s", o1->OPeriod(o1));
         mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res->OPeriod(res));
@@ -102,19 +102,19 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
                   DeltaVCircToEllip(o1, res, nullptr));
     }
 
-    mvwprintw(win, 9, 2, "Resonant state:     ");
+    mvwprintw(win, 9, 2, "Resonant state: ");
     int32_t color = (UIState->resErr == RES_SUCCESS) ? 1 : 2;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->resErr));
     wattroff(win, COLOR_PAIR(color));
 
-    mvwprintw(win, 10, 2, "Orbit state:        ");
+    mvwprintw(win, 10, 2, "Orbit state:    ");
     color = (UIState->orbitErr == ORBIT_SUCCESS) ? 1 : 2;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->orbitErr));
     wattroff(win, COLOR_PAIR(color));
 
-    mvwprintw(win, 11, 2, "LOS state:          ");
+    mvwprintw(win, 11, 2, "LOS state:      ");
     color = (UIState->losErr == LOS_SUCCESS) ? 1 : 2;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->losErr));
@@ -227,16 +227,15 @@ int32_t main(void)
             );
         }
 
-        //Todo: fix this shit
-        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
-        {
-            state.losErr = LOS_ERR_ORBIT_NOT_CIRCULAR;
-        }
         if (!LineofSight(&targetOrbit, state.satelliteCount, &state.losErr))
         {
-            state.losErr = LOS_ERR_MISSING_PRIMARY;
+            state.losErr = LOS_ERR_OCCLUDED_BY_SURFACE;
         }
 
+        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
+        {
+            state.losErr = LOS_ERR_OCCLUDED_BY_ATMOSPHERE;
+        }
 
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);
@@ -293,8 +292,6 @@ int32_t main(void)
             default: break;
         }
     }
-
-
 
     endwin();
     return 0;
