@@ -260,37 +260,29 @@ int32_t main(void)
             case 'q':
                 running = false;
                 break;
-
             case 'p':
                 changePrecision(&state);
-            break;
-
+                break;
             case 'm':
                 state.resMode = (state.resMode + 1) % 2;
-            break;
-
+                break;
             case 'w':
                 state.satelliteCount++;
-            break;
-
+                break;
             case 's':
                 if (state.satelliteCount > 0) state.satelliteCount--;
-            break;
-
+                break;
             case KEY_UP:
                 state.selected_body =
                     (state.selected_body - 1 + BODY_COUNT) % BODY_COUNT;
                 break;
-
             case KEY_DOWN:
                 state.selected_body =
                     (state.selected_body + 1) % BODY_COUNT;
                 break;
-
             case KEY_RIGHT:
                 state.altitude += state.precision;
                 break;
-
             case KEY_LEFT:
                 state.altitude -= state.precision;
                 if (state.altitude < state.precision) state.altitude = state.precision;
