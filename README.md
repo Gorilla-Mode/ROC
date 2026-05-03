@@ -19,7 +19,7 @@ do that.
 - **Apoapsis/Periapsis Target** - Use either the apoapsis or periapsis as the insertion target
 - **Delta-V Calculations** - Determine the delta-v required for orbital insertion
 - **Celestial Body Data** - Built-in data for all KSP celestial bodies
-- **Orbital Error Handling** - Accounts for line of sight, SOI, and atmosphere intersection
+- **Orbital Error Handling** - Accounts for line of sight, SOI, atmospheric occlusion, etc.
 
 ## Showcase
 
