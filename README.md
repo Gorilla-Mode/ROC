@@ -48,7 +48,8 @@ A separate executable is provided for unit testing
 - [x] Delta-V Calculations
 - [x] Celestial Body Data
 - [x] Error Handling
-- [ ] Unit Tests (WIP)
-- [ ] User Input
-- [ ] User Interface
+- [x] Unit Tests (Can't be bothered to write more)
+- [x] User Input
+- [x] User Interface
 - [ ] Visualisation
+- [ ] Exporting Results
