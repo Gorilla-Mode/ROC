@@ -31,8 +31,22 @@ struct CelestBody
 
 enum CelestBodyKey
 {
-    MOHO, EVE, GILLY, KERBIN,
-    MUN, MINMUS, DUNA, IKE,
-    DRES, JOOL, LAYTHE, VALL,
-    TYLO, BOP, POL, EELOO, BODY_COUNT
+    MOHO,
+    EVE,
+    GILLY,
+    KERBIN,
+    MUN,
+    MINMUS,
+    DUNA,
+    IKE,
+    DRES,
+    JOOL,
+    LAYTHE,
+    VALL,
+    TYLO, 
+    BOP,
+    POL,
+    EELOO,
+
+    BODY_COUNT
 };

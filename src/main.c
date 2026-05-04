@@ -15,6 +15,12 @@ typedef enum
     MODE_RETROGRADE
 } ResonantMode;
 
+typedef enum
+{
+    COL_GREEN = 1,
+    COL_RED
+}TextColor;
+
 typedef struct {
     int32_t selected_body;
     f64_t altitude;
@@ -103,19 +109,19 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
     }
 
     mvwprintw(win, 9, 2, "Resonant state: ");
-    int32_t color = (UIState->resErr == RES_SUCCESS) ? 1 : 2;
+    int32_t color = (UIState->resErr == RES_SUCCESS) ? COL_GREEN : COL_RED;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->resErr));
     wattroff(win, COLOR_PAIR(color));
 
     mvwprintw(win, 10, 2, "Orbit state:    ");
-    color = (UIState->orbitErr == ORBIT_SUCCESS) ? 1 : 2;
+    color = (UIState->orbitErr == ORBIT_SUCCESS) ? COL_GREEN : COL_RED;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->orbitErr));
     wattroff(win, COLOR_PAIR(color));
 
     mvwprintw(win, 11, 2, "LOS state:      ");
-    color = (UIState->losErr == LOS_SUCCESS) ? 1 : 2;
+    color = (UIState->losErr == LOS_SUCCESS) ? COL_GREEN : COL_RED;
     wattron(win, COLOR_PAIR(color));
     wprintw(win, "%s", ErrToStr(UIState->losErr));
     wattroff(win, COLOR_PAIR(color));
@@ -171,8 +177,8 @@ int32_t main(void)
 {
     initscr();
     start_color();
-    init_pair(1, COLOR_GREEN, COLOR_BLACK);
-    init_pair(2, COLOR_RED,   COLOR_BLACK);
+    init_pair(COL_GREEN, COLOR_GREEN, COLOR_BLACK);
+    init_pair(COL_RED, COLOR_RED,   COLOR_BLACK);
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
@@ -181,13 +187,13 @@ int32_t main(void)
     int32_t rows, cols;
     getmaxyx(stdscr, rows, (cols));
 
-    int32_t footer_h    = 3;
-    int32_t main_h      = rows - footer_h;
+    constexpr auto footer_h = 3;
+    const auto main_h   = rows - footer_h;
 
-    int32_t left_w      = cols / 2;
-    int32_t right_w     = cols - left_w;
+    const auto left_w  = cols / 2;
+    const auto right_w = cols - left_w;
 
-    int32_t half_h      = main_h / 2;
+    const auto half_h  = main_h / 2;
 
     WINDOW *left_top    = newwin(half_h +5, left_w, 0, 0);
     WINDOW *left_bottom = newwin(main_h - half_h -5, left_w, half_h + 5, 0);
@@ -254,37 +260,29 @@ int32_t main(void)
             case 'q':
                 running = false;
                 break;
-
             case 'p':
                 changePrecision(&state);
-            break;
-
+                break;
             case 'm':
                 state.resMode = (state.resMode + 1) % 2;
-            break;
-
+                break;
             case 'w':
                 state.satelliteCount++;
-            break;
-
+                break;
             case 's':
                 if (state.satelliteCount > 0) state.satelliteCount--;
-            break;
-
+                break;
             case KEY_UP:
                 state.selected_body =
                     (state.selected_body - 1 + BODY_COUNT) % BODY_COUNT;
                 break;
-
             case KEY_DOWN:
                 state.selected_body =
                     (state.selected_body + 1) % BODY_COUNT;
                 break;
-
             case KEY_RIGHT:
                 state.altitude += state.precision;
                 break;
-
             case KEY_LEFT:
                 state.altitude -= state.precision;
                 if (state.altitude < state.precision) state.altitude = state.precision;
