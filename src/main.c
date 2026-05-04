@@ -224,25 +224,27 @@ int32_t main(void)
             &state.orbitErr
         );
 
-        if (state.orbitErr == ORBIT_SUCCESS && state.resErr == RES_SUCCESS && state.losErr == LOS_SUCCESS)
+        if (state.orbitErr != ORBIT_SUCCESS)
         {
-            insertOrbit = func(
+            state.losErr = LOS_ERR_MISSING_VALID_TARGET;
+            state.resErr = RES_ERR_MISSING_VALID_TARGET;
+
+            goto Draw_UI;
+        }
+
+        insertOrbit = func(
                 &targetOrbit,
                 state.satelliteCount,
                 &state.resErr
-            );
-        }
+                );
 
-        if (!LineofSight(&targetOrbit, state.satelliteCount, &state.losErr))
+        LineofSight(&targetOrbit, state.satelliteCount, &state.losErr);
+        if (state.losErr != LOS_ERR_OCCLUDED_BY_SURFACE)
         {
-            state.losErr = LOS_ERR_OCCLUDED_BY_SURFACE;
+            AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr);
         }
 
-        if (!AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr))
-        {
-            state.losErr = LOS_ERR_OCCLUDED_BY_ATMOSPHERE;
-        }
-
+        Draw_UI:
         DrawBodyList(left_top, state.selected_body);
         DrawBodyInfo(left_bottom, state.selected_body);
         DrawResults(right_top, &targetOrbit, &insertOrbit, &state);
