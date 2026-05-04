@@ -17,6 +17,7 @@ const char* ResonantErrorToString(ResonantError err)
         [RES_ERR_NOT_ELLIPTICAL_OR_CIRCULAR]   = "Base orbit is not elliptical or circular",
         [RES_ERR_NOT_INTERSECTING]             = "Periapsis or apoapsis don't intersect base",
         [RES_ERR_PERIAPSIS_BELOW_ATMOSPHERE]   = "Below atmosphere, raise periapsis",
+        [RES_ERR_MISSING_VALID_TARGET]         = "Missing valid target orbit",
     };
 
     if (err >= (sizeof(errorStrings) / sizeof(errorStrings[0]))) {
@@ -34,6 +35,7 @@ const char* LosErrorToString(LosError err)
         [LOS_ERR_ORBIT_NOT_CIRCULAR]       = "Orbit is not circular",
         [LOS_ERR_OCCLUDED_BY_SURFACE]      = "Occluded by surface, raise target",
         [LOS_ERR_OCCLUDED_BY_ATMOSPHERE]   = "Occluded by atmosphere, raise target",
+        [LOS_ERR_MISSING_VALID_TARGET]     = "Missing valid target orbit",
 
     };
 

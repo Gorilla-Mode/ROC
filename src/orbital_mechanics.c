@@ -128,10 +128,10 @@ Orbit CalcResonantOrbitRetr(const Orbit *orbit, uint32_t satteliteCount, Resonan
     return resonantOrbit;
 }
 
-bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
+void LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
     if (!ValidateLosParams(orbit, satelliteCount, err))
-        return false;
+        return;
 
     const f64_t SmajA = orbit->SMajorAxisM;
     const f64_t EqRad = orbit->PrimaryBody->EqRadiusM;
@@ -139,13 +139,14 @@ bool LineofSight(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
     const f64_t Theta = 2.0 * M_PI / (f64_t)satelliteCount;
     const f64_t MinDist = SmajA * cos(Theta / 2.0);
 
-    return MinDist > EqRad;
+    if (MinDist < EqRad)
+        *err = LOS_ERR_OCCLUDED_BY_SURFACE;
 }
 
-bool AtmosphericOccusion(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
+void AtmosphericOccusion(const Orbit *orbit, uint32_t satelliteCount, LosError *err)
 {
     if (!ValidateLosParams(orbit, satelliteCount, err))
-        return false;
+        return;
 
     const f64_t SmajA = orbit->SMajorAxisM;
     const f64_t AtmH = orbit->PrimaryBody->EqRadiusM + orbit->PrimaryBody->AtmHeightM;
@@ -153,5 +154,6 @@ bool AtmosphericOccusion(const Orbit *orbit, uint32_t satelliteCount, LosError *
     const f64_t Theta = 2.0 * M_PI / (f64_t)satelliteCount;
     const f64_t MinDist = SmajA * cos(Theta / 2.0);
 
-    return MinDist > AtmH;
+    if (MinDist < AtmH)
+        *err = LOS_ERR_OCCLUDED_BY_ATMOSPHERE;
 }

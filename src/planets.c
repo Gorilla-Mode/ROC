@@ -142,7 +142,7 @@ CelestBody Kerbol[] = {
         //Eeloo
         .GravSurf = 1.69,
         .GravParam = 5.5417694e11,
-        .EqRadiusM = 2100000,
+        .EqRadiusM = 210000,
         .AtmHeightM = -1,
         .SOI = 1.1908294e8,
         .Name = "Eeloo"
