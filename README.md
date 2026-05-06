@@ -19,7 +19,12 @@ do that.
 - **Apoapsis/Periapsis Target** - Use either the apoapsis or periapsis as the insertion target
 - **Delta-V Calculations** - Determine the delta-v required for orbital insertion
 - **Celestial Body Data** - Built-in data for all KSP celestial bodies
-- **Orbital Error Handling** - Accounts for line of sight, SOI, and atmosphere intersection
+- **Orbital Error Handling** - Accounts for line of sight, SOI, atmospheric occlusion, etc.
+
+## Showcase
+
+<img width="1194" height="803" alt="image" src="https://github.com/user-attachments/assets/dba1bbf7-737c-4614-b0ce-acdd7ca7dc57" />
+
 
 ## Build
 
@@ -48,7 +53,8 @@ A separate executable is provided for unit testing
 - [x] Delta-V Calculations
 - [x] Celestial Body Data
 - [x] Error Handling
-- [ ] Unit Tests (WIP)
-- [ ] User Input
-- [ ] User Interface
+- [x] Unit Tests (Can't be bothered to write more)
+- [x] User Input
+- [x] User Interface
 - [ ] Visualisation
+- [ ] Exporting Results
