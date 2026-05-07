@@ -216,8 +216,6 @@ int32_t main(void)
     bool running = true;
     while (running)
     {
-        ResonantFunc func = GetResonantFunc(state.resMode);
-        Orbit insertOrbit;
         Orbit targetOrbit = CreateOrbitCircularAlt(
             &Kerbol[state.selected_body],
             state.altitude,
@@ -232,17 +230,12 @@ int32_t main(void)
             goto Draw_UI;
         }
 
-        insertOrbit = func(
-                &targetOrbit,
-                state.satelliteCount,
-                &state.resErr
-                );
+        ResonantFunc func = GetResonantFunc(state.resMode);
+        Orbit insertOrbit = func(&targetOrbit, state.satelliteCount, &state.resErr);
 
         LineofSight(&targetOrbit, state.satelliteCount, &state.losErr);
         if (state.losErr != LOS_ERR_OCCLUDED_BY_SURFACE)
-        {
             AtmosphericOccusion(&targetOrbit, state.satelliteCount, &state.losErr);
-        }
 
         Draw_UI:
         DrawBodyList(left_top, state.selected_body);
