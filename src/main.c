@@ -34,7 +34,7 @@ typedef struct {
 
 typedef Orbit (*ResonantFunc)(const Orbit *orbit, uint32_t satelliteCount, ResonantError* err);
 
-ResonantFunc GetResonantFunc(ResonantMode mode)
+ResonantFunc GetResonantFunc(const ResonantMode mode)
 {
     switch (mode)
     {
@@ -44,7 +44,7 @@ ResonantFunc GetResonantFunc(ResonantMode mode)
     }
 }
 
-char* ResonantModeToString(ResonantMode mode)
+char* ResonantModeToString(const ResonantMode mode)
 {
     switch (mode)
     {
@@ -54,18 +54,18 @@ char* ResonantModeToString(ResonantMode mode)
     }
 }
 
-void DrawBodyList(WINDOW *win, int32_t selected)
+void DrawBodyList(WINDOW *win, const int32_t selected_body)
 {
     werase(win);
     box(win, 0, 0);
 
     for (int32_t i = 0; i < BODY_COUNT; ++i)
     {
-        if (i == selected) wattron(win, A_REVERSE);
+        if (i == selected_body) wattron(win, A_REVERSE);
 
         mvwprintw(win, i + 1, 2, "%s", Kerbol[i].Name);
 
-        if (i == selected) wattroff(win, A_REVERSE);
+        if (i == selected_body) wattroff(win, A_REVERSE);
     }
 
     mvwprintw(win, 0, 2, " Bodies ");
@@ -74,23 +74,23 @@ void DrawBodyList(WINDOW *win, int32_t selected)
 
 void DrawBodyInfo(WINDOW *win, int32_t selected)
 {
-    CelestBody *b = &Kerbol[selected];
+    CelestBody *celest_body = &Kerbol[selected];
 
     werase(win);
     box(win, 0, 0);
     mvwprintw(win, 0, 2, " Selected Body Info ");
 
-    mvwprintw(win, 1, 2, "Name:                %s",   b->Name);
-    mvwprintw(win, 2, 2, "Grav Surf:           %.2f m/s^2", b->GravSurf);
-    mvwprintw(win, 3, 2, "Grav Param:          %.2f m^3*s^-2", b->GravParam);
-    mvwprintw(win, 4, 2, "Sphere of influence: %.2f m", b->SOI);
-    mvwprintw(win, 5, 2, "Atmosphere height:   %d m", b->AtmHeightM);
-    mvwprintw(win, 6, 2, "Equatorial radius:   %llu m", b->EqRadiusM);
+    mvwprintw(win, 1, 2, "Name:                %s",   celest_body->Name);
+    mvwprintw(win, 2, 2, "Grav Surf:           %.2f m/s^2", celest_body->GravSurf);
+    mvwprintw(win, 3, 2, "Grav Param:          %.2f m^3*s^-2", celest_body->GravParam);
+    mvwprintw(win, 4, 2, "Sphere of influence: %.2f m", celest_body->SOI);
+    mvwprintw(win, 5, 2, "Atmosphere height:   %d m", celest_body->AtmHeightM);
+    mvwprintw(win, 6, 2, "Equatorial radius:   %llu m", celest_body->EqRadiusM);
 
     wrefresh(win);
 }
 
-void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIState)
+void DrawResults(WINDOW *win, const Orbit *target_orbit, const Orbit *res_orbit, UIState *UIState)
 {
     werase(win);
     box(win, 0, 0);
@@ -98,14 +98,14 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
 
     if (UIState->resErr == RES_SUCCESS && UIState->orbitErr == ORBIT_SUCCESS && UIState->losErr == LOS_SUCCESS)
     {
-        mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res->ApoapsisHeight(res));
-        mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res->PeriapsisHeight(res));
-        mvwprintw(win, 3, 2, "Eccentricity:       %lf", res->Eccentricity);
+        mvwprintw(win, 1, 2, "Resonant apoapsis:  %.2lf m", res_orbit->ApoapsisHeight(res_orbit));
+        mvwprintw(win, 2, 2, "Resonant periapsis: %.2lf m", res_orbit->PeriapsisHeight(res_orbit));
+        mvwprintw(win, 3, 2, "Eccentricity:       %lf", res_orbit->Eccentricity);
 
-        mvwprintw(win, 5, 2, "Target Period:      %lf s", o1->OPeriod(o1));
-        mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res->OPeriod(res));
+        mvwprintw(win, 5, 2, "Target Period:      %lf s", target_orbit->OPeriod(target_orbit));
+        mvwprintw(win, 6, 2, "Resonant Period:    %lf s", res_orbit->OPeriod(res_orbit));
         mvwprintw(win, 7, 2, "DeltaV:             %.2f m/s",
-                  DeltaVCircToEllip(o1, res, nullptr));
+                  DeltaVCircToEllip(target_orbit, res_orbit, nullptr));
     }
 
     mvwprintw(win, 9, 2, "Resonant state: ");
@@ -129,7 +129,7 @@ void DrawResults(WINDOW *win, const Orbit *o1, const Orbit *res, UIState *UIStat
     wrefresh(win);
 }
 
-void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *UIState)
+void DrawControls(WINDOW *win, f64_t altitude, const Orbit *target_orbit, const UIState *UIState)
 {
 
     werase(win);
@@ -139,7 +139,7 @@ void DrawControls(WINDOW *win, f64_t altitude, const Orbit *o1, const UIState *U
     mvwprintw(win, 1, 2, "Altitude:   %.00f m", altitude);
     if (UIState->resErr == RES_SUCCESS && UIState->orbitErr == ORBIT_SUCCESS && UIState->losErr == LOS_SUCCESS)
     {
-        mvwprintw(win, 2, 2, "Period:     %lf s", o1->OPeriod(o1));
+        mvwprintw(win, 2, 2, "Period:     %lf s", target_orbit->OPeriod(target_orbit));
     }
     else
     {
@@ -163,13 +163,11 @@ void DrawFooter(WINDOW *win)
 
 void changePrecision(UIState *UIState)
 {
-    switch (UIState->precision)
+    if (UIState->precision == 1000)
+        UIState->precision = 1;
+    else
     {
-        case 1000: UIState->precision = 100; break;
-        case 100:  UIState->precision = 10; break;
-        case 10:   UIState->precision = 1; break;
-        case 1:    UIState->precision = 1000; break;
-        default: break;
+        UIState->precision *= 10;
     }
 }
 
@@ -178,7 +176,7 @@ int32_t main(void)
     initscr();
     start_color();
     init_pair(COL_GREEN, COLOR_GREEN, COLOR_BLACK);
-    init_pair(COL_RED, COLOR_RED,   COLOR_BLACK);
+    init_pair(COL_RED, COLOR_RED, COLOR_BLACK);
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
@@ -189,10 +187,8 @@ int32_t main(void)
 
     constexpr auto footer_h = 3;
     const auto main_h   = rows - footer_h;
-
     const auto left_w  = cols / 2;
     const auto right_w = cols - left_w;
-
     const auto half_h  = main_h / 2;
 
     WINDOW *left_top    = newwin(half_h +5, left_w, 0, 0);
