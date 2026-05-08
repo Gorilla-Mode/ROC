@@ -61,11 +61,13 @@ void DrawBodyList(WINDOW *win, const int32_t selected_body)
 
     for (int32_t i = 0; i < BODY_COUNT; ++i)
     {
-        if (i == selected_body) wattron(win, A_REVERSE);
+        if (i == selected_body)
+            wattron(win, A_REVERSE);
 
         mvwprintw(win, i + 1, 2, "%s", Kerbol[i].Name);
 
-        if (i == selected_body) wattroff(win, A_REVERSE);
+        if (i == selected_body)
+            wattroff(win, A_REVERSE);
     }
 
     mvwprintw(win, 0, 2, " Bodies ");
@@ -166,9 +168,7 @@ void changePrecision(UIState *UIState)
     if (UIState->precision == 1000)
         UIState->precision = 1;
     else
-    {
         UIState->precision *= 10;
-    }
 }
 
 int32_t main(void)
